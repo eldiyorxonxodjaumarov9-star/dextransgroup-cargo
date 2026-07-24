@@ -12,7 +12,6 @@ const links = [
   { href: "/cargo", label: "Cargo" },
   { href: "/warehouses", label: "Omborlar" },
   { href: "/operators", label: "Operatorlar" },
-  { href: "/channels", label: "Kanallar" },
   { href: "/admin", label: "Admin" },
 ];
 

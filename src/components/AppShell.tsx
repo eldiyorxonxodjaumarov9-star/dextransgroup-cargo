@@ -20,7 +20,6 @@ const publicNav = [
   { id: "cargo", href: "/#cargo", label: "Cargo" },
   { id: "warehouses", href: "/#warehouses", label: "Omborlar" },
   { id: "operators", href: "/#operators", label: "Operatorlar" },
-  { id: "channels", href: "/#channels", label: "Kanallar" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -98,10 +97,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="min-h-[100dvh] bg-[var(--shell-bg)] text-foreground">
         <header className="sticky-header border-b border-border bg-card/95 backdrop-blur">
           <div className="page-wrap flex h-16 items-center justify-between gap-3">
-            <Link href="/" className="min-w-0 shrink">
+            <Link href="/" className="min-w-0 shrink" aria-label="DextransGroup Cargo">
               <BrandLogo
-                variant="cargo"
-                className="h-8 w-auto max-w-[min(160px,42vw)] sm:h-9 sm:max-w-[180px]"
+                variant="nav"
+                priority
+                className="h-9 w-auto max-w-[min(190px,52vw)] sm:h-10 sm:max-w-[220px]"
               />
             </Link>
             <div className="flex shrink-0 items-center gap-2">
@@ -139,8 +139,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-label="Bosh sahifa"
           >
             <BrandLogo
-              variant="cargo"
-              className="h-8 w-auto max-w-[min(170px,48vw)] sm:h-10 sm:max-w-[190px]"
+              variant="nav"
+              priority
+              className="h-10 w-auto max-w-[min(210px,55vw)] sm:h-11 sm:max-w-[250px]"
             />
           </button>
 
