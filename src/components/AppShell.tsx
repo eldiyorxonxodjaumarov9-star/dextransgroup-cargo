@@ -53,11 +53,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const lockRef = useRef(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const [enterKey, setEnterKey] = useState(0);
+  const busyRef = useRef(false);
+  const intentRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Avoid hydration mismatch for theme-dependent UI
     // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount gate
     setMounted(true);
   }, []);
@@ -66,49 +68,87 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
+    setEnterKey((k) => k + 1);
+    setTransitioning(false);
+    busyRef.current = false;
+    intentRef.current = 0;
   }, [pathname]);
 
   useEffect(() => {
     const path = normalizePath(pathname);
     if (path.startsWith("/admin")) return;
 
-    const go = (direction: 1 | -1) => {
-      if (lockRef.current) return;
+    const navigate = (direction: 1 | -1) => {
+      if (busyRef.current || transitioning) return;
       const index = resolveScrollIndex(pathname);
       if (index < 0) return;
       const next = index + direction;
       if (next < 0 || next >= scrollRoutes.length) return;
-      lockRef.current = true;
-      router.push(scrollRoutes[next]);
+
+      busyRef.current = true;
+      intentRef.current = 0;
+      setTransitioning(true);
+
+      const href = scrollRoutes[next];
       window.setTimeout(() => {
-        lockRef.current = false;
-      }, 900);
+        router.push(href);
+      }, 220);
     };
 
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) < 40) return;
-      const scrollingDown = event.deltaY > 0;
+    const tryEdgeNav = (direction: 1 | -1, strength: number) => {
       const doc = document.documentElement;
-      const atTop = window.scrollY <= 8;
+      const scrollable = doc.scrollHeight > window.innerHeight + 32;
+      const atTop = window.scrollY <= 4;
       const atBottom =
-        window.innerHeight + window.scrollY >= doc.scrollHeight - 8;
+        window.innerHeight + window.scrollY >= doc.scrollHeight - 4;
 
-      if (scrollingDown && atBottom) {
-        event.preventDefault();
-        go(1);
-      } else if (!scrollingDown && atTop) {
-        event.preventDefault();
-        go(-1);
+      if (scrollable) {
+        if (direction === 1 && !atBottom) {
+          intentRef.current = 0;
+          return;
+        }
+        if (direction === -1 && !atTop) {
+          intentRef.current = 0;
+          return;
+        }
+      }
+
+      intentRef.current += strength;
+      const need = scrollable ? 90 : 140;
+      if (intentRef.current >= need) {
+        navigate(direction);
       }
     };
 
+    const onWheel = (event: WheelEvent) => {
+      if (busyRef.current || transitioning) return;
+      if (Math.abs(event.deltaY) < 8) return;
+
+      const direction: 1 | -1 = event.deltaY > 0 ? 1 : -1;
+      // Opposite scroll cancels pending intent
+      if (
+        (direction === 1 && intentRef.current < 0) ||
+        (direction === -1 && intentRef.current > 0)
+      ) {
+        intentRef.current = 0;
+      }
+      tryEdgeNav(direction, Math.min(Math.abs(event.deltaY), 80));
+    };
+
+    const decay = window.setInterval(() => {
+      if (busyRef.current) return;
+      intentRef.current *= 0.82;
+      if (Math.abs(intentRef.current) < 8) intentRef.current = 0;
+    }, 120);
+
     const onKeyDown = (event: KeyboardEvent) => {
+      if (busyRef.current || transitioning) return;
       if (event.key === "PageDown") {
         event.preventDefault();
-        go(1);
+        navigate(1);
       } else if (event.key === "PageUp") {
         event.preventDefault();
-        go(-1);
+        navigate(-1);
       }
     };
 
@@ -117,33 +157,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
 
     const onTouchEnd = (event: TouchEvent) => {
-      if (touchYRef.current == null) return;
+      if (busyRef.current || transitioning || touchYRef.current == null) return;
       const endY = event.changedTouches[0]?.clientY ?? touchYRef.current;
       const delta = touchYRef.current - endY;
       touchYRef.current = null;
-      if (Math.abs(delta) < 70) return;
-
-      const doc = document.documentElement;
-      const atTop = window.scrollY <= 8;
-      const atBottom =
-        window.innerHeight + window.scrollY >= doc.scrollHeight - 8;
-
-      if (delta > 0 && atBottom) go(1);
-      if (delta < 0 && atTop) go(-1);
+      if (Math.abs(delta) < 50) return;
+      tryEdgeNav(delta > 0 ? 1 : -1, Math.abs(delta));
     };
 
-    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("wheel", onWheel, { passive: true });
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
 
     return () => {
+      window.clearInterval(decay);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [pathname, router]);
+  }, [pathname, router, transitioning]);
 
   return (
     <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
@@ -252,8 +286,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
-        {!pathname.startsWith("/admin") && <SiteFooter />}
+        <div
+          key={enterKey}
+          className={cn(
+            "flex flex-1 flex-col page-shell-enter",
+            transitioning && "page-shell-exit"
+          )}
+        >
+          <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+          <SiteFooter />
+        </div>
       </div>
     </div>
   );
