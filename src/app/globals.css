@@ -225,3 +225,7 @@ button {
     animation: none;
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}

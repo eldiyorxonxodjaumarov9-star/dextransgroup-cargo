@@ -8,8 +8,16 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import { ItemCard } from "@/components/ItemCard";
+import { OperatorCard } from "@/components/OperatorCard";
+import { WarehouseDetailCard } from "@/components/WarehouseDetailCard";
+import { HashScroll } from "@/components/HashScroll";
+import { CATEGORY_LABELS } from "@/lib/constants";
+import { TAPLINK_SOURCE, TELEGRAM_CHANNELS } from "@/lib/channels";
+import { itemListInclude, sanitizeItem } from "@/lib/item-api";
 import { prisma } from "@/lib/prisma";
 import { safeQuery } from "@/lib/safe-query";
+import { warehouseListSelect } from "@/lib/warehouse-api";
 
 export const dynamic = "force-dynamic";
 
@@ -79,228 +87,480 @@ const values = [
   { icon: Headphones, title: "24/7 yordam", text: "Operator bilan aloqa" },
 ];
 
+const channelMeta: Record<
+  string,
+  { description: string; image: string; ctaClass: string; cta: string }
+> = {
+  logistika: {
+    description: "Yuklar, yo‘nalishlar va tezkor logistika yangiliklari",
+    image:
+      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=900&q=80",
+    ctaClass: "bg-[var(--brand-teal)] text-white",
+    cta: "Kanalga o‘tish",
+  },
+  "foto-video": {
+    description: "Kamera, studio va multimedia mahsulotlari",
+    image:
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80",
+    ctaClass: "bg-[var(--brand-navy)] text-white",
+    cta: "Kanalga o‘tish",
+  },
+  textil: {
+    description: "Tekstil, print va brend aksessuarlari",
+    image:
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=900&q=80",
+    ctaClass: "bg-[var(--brand-teal-dark)] text-white",
+    cta: "Kanalga o‘tish",
+  },
+  "dex-car": {
+    description: "Avtomobil yo‘nalishi va maxsus takliflar",
+    image:
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80",
+    ctaClass: "bg-[var(--brand-navy)] text-white",
+    cta: "Kanalga o‘tish",
+  },
+  admin: {
+    description: "Admin bilan bog‘lanish",
+    image:
+      "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=900&q=80",
+    ctaClass: "bg-[var(--brand-teal)] text-white",
+    cta: "Email yozish",
+  },
+};
+
 export default async function HomePage() {
-  const warehouseCount = await safeQuery(
-    "HomePage.warehouseCount",
-    () =>
-      prisma.warehouse.count({
-        where: { region: "CHINA" },
-      }),
-    0
-  );
+  const [warehouseCount, rawItems, warehouses, operators] = await Promise.all([
+    safeQuery(
+      "Home.warehouseCount",
+      () => prisma.warehouse.count({ where: { region: "CHINA" } }),
+      0
+    ),
+    safeQuery(
+      "Home.cargo",
+      () =>
+        prisma.cargoItem.findMany({
+          include: itemListInclude,
+          orderBy: { date: "desc" },
+        }),
+      []
+    ),
+    safeQuery(
+      "Home.warehouses",
+      () =>
+        prisma.warehouse.findMany({
+          select: warehouseListSelect,
+          orderBy: [{ region: "asc" }, { name: "asc" }],
+        }),
+      []
+    ),
+    safeQuery(
+      "Home.operators",
+      () =>
+        prisma.operator.findMany({
+          orderBy: [{ isActive: "desc" }, { name: "asc" }],
+        }),
+      []
+    ),
+  ]);
+
+  const items = rawItems.map(sanitizeItem);
+  const china = warehouses.filter((w) => w.region === "CHINA");
+  const tashkent = warehouses.filter((w) => w.region === "TASHKENT");
+  const cargoSections = [
+    { id: "new", category: "NEW" as const },
+    { id: "transit", category: "IN_TRANSIT" as const },
+    { id: "arrived", category: "ARRIVED" as const },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* HERO */}
-      <section className="relative overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_25px_60px_-40px_rgba(8,32,64,0.45)]">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1800&q=80"
-            alt="Dextrans logistics"
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)] via-[var(--brand-navy)]/92 to-[var(--brand-teal)]/35" />
-        </div>
+    <div className="space-y-16 pb-6">
+      <HashScroll />
 
-        <div className="relative grid gap-6 p-6 md:p-8 lg:grid-cols-[1.35fr_0.75fr] lg:p-10">
-          <div className="max-w-2xl space-y-5">
+      {/* HOME */}
+      <section id="home" className="scroll-mt-24 space-y-6">
+        <div className="relative overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_25px_60px_-40px_rgba(8,32,64,0.45)]">
+          <div className="absolute inset-0">
             <Image
-              src="/brand/logo-worldwide.png"
-              alt="dextrans Worldwide"
-              width={240}
-              height={88}
+              src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1800&q=80"
+              alt="Dextrans logistics"
+              fill
               priority
-              className="h-14 w-auto max-w-[240px]"
+              className="object-cover"
+              sizes="100vw"
+              unoptimized
             />
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--accent)]">
-              Sifat • Tezkorlik • Ishonch
-            </p>
-            <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[56px]">
-              DEXTRANS GROUP
-              <br />
-              <span className="text-[var(--accent)]">CARGO</span>
-            </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-white/75 md:text-base">
-              Xitoy omborlari, yuk kuzatuvi va rasmiy Telegram kanallar — bitta
-              professional platformada.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/cargo"
-                className="inline-flex items-center gap-2 rounded-2xl bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/25"
-              >
-                Cargo yuklar
-              </Link>
-              <Link
-                href="/channels"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur"
-              >
-                Aloqa kanallari
-              </Link>
-            </div>
-
-            <div className="grid gap-3 pt-2 sm:grid-cols-3">
-              {[
-                { icon: PackageCheck, value: "1250+", label: "Yuk yetkazib berildi" },
-                { icon: ShieldCheck, value: "98%", label: "Mamnun mijozlar" },
-                { icon: Clock3, value: "24/7", label: "Qo‘llab-quvvatlash" },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm backdrop-blur"
-                  >
-                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-teal)] text-white">
-                      <Icon size={16} />
-                    </div>
-                    <p className="text-xl font-black text-white">{item.value}</p>
-                    <p className="text-[11px] text-white/65">{item.label}</p>
-                  </div>
-                );
-              })}
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)] via-[var(--brand-navy)]/92 to-[var(--brand-teal)]/35" />
           </div>
 
-          <div className="flex items-end justify-end">
-            <div className="w-full max-w-sm rounded-[24px] border border-white/20 bg-[var(--brand-navy-deep)]/80 p-5 text-white shadow-2xl backdrop-blur-xl">
-              <p className="mb-4 text-sm font-bold">Tezkor menyu</p>
-              <div className="space-y-3">
-                <Link
-                  href="/warehouses"
-                  className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+          <div className="relative grid gap-6 p-6 md:p-8 lg:grid-cols-[1.35fr_0.75fr] lg:p-10">
+            <div className="max-w-2xl space-y-5">
+              <Image
+                src="/brand/logo-worldwide.png"
+                alt="dextrans Worldwide"
+                width={240}
+                height={88}
+                priority
+                className="h-14 w-auto max-w-[240px]"
+              />
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--accent)]">
+                Sifat • Tezkorlik • Ishonch
+              </p>
+              <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[56px]">
+                DEXTRANS GROUP
+                <br />
+                <span className="text-[var(--accent)]">CARGO</span>
+              </h1>
+              <p className="max-w-xl text-sm leading-relaxed text-white/75 md:text-base">
+                Xitoy omborlari, yuk kuzatuvi va rasmiy Telegram kanallar — bitta
+                professional platformada.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="#cargo"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/25"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
-                    🇨🇳
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">Xitoy omborlari</p>
-                    <p className="text-xs text-white/70">{warehouseCount} ta manzil</p>
-                  </div>
-                </Link>
-                <Link
-                  href="/warehouses"
-                  className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+                  Cargo yuklar
+                </a>
+                <a
+                  href="#channels"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
-                    🇺🇿
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">Toshkent omborlari</p>
-                    <p className="text-xs text-white/70">Admin orqali boshqariladi</p>
-                  </div>
-                </Link>
+                  Aloqa kanallari
+                </a>
+              </div>
+
+              <div className="grid gap-3 pt-2 sm:grid-cols-3">
+                {[
+                  { icon: PackageCheck, value: "1250+", label: "Yuk yetkazib berildi" },
+                  { icon: ShieldCheck, value: "98%", label: "Mamnun mijozlar" },
+                  { icon: Clock3, value: "24/7", label: "Qo‘llab-quvvatlash" },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm backdrop-blur"
+                    >
+                      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-teal)] text-white">
+                        <Icon size={16} />
+                      </div>
+                      <p className="text-xl font-black text-white">{item.value}</p>
+                      <p className="text-[11px] text-white/65">{item.label}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+
+            <div className="flex items-end justify-end">
+              <div className="w-full max-w-sm rounded-[24px] border border-white/20 bg-[var(--brand-navy-deep)]/80 p-5 text-white shadow-2xl backdrop-blur-xl">
+                <p className="mb-4 text-sm font-bold">Tezkor menyu</p>
+                <div className="space-y-3">
+                  <a
+                    href="#warehouses"
+                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+                  >
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
+                      🇨🇳
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold">Xitoy omborlari</p>
+                      <p className="text-xs text-white/70">{warehouseCount} ta manzil</p>
+                    </div>
+                  </a>
+                  <a
+                    href="#warehouses"
+                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+                  >
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
+                      🇺🇿
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold">Toshkent omborlari</p>
+                      <p className="text-xs text-white/70">Admin orqali boshqariladi</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {categoryCards.map((card) => {
+            const inner = (
+              <>
+                <div className="flex items-start justify-between gap-3 p-4 pb-2">
+                  <div>
+                    <h3 className="text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
+                      {card.title}
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">
+                      {card.description}
+                    </p>
+                  </div>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-[var(--brand-teal)] shadow-sm">
+                    <ArrowRight size={14} />
+                  </span>
+                </div>
+                <div className="relative mx-4 mb-3 aspect-[5/4] overflow-hidden rounded-2xl bg-[var(--shell-bg)]">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="(max-width:768px) 100vw, 20vw"
+                    unoptimized
+                  />
+                  {card.avatar && (
+                    <span className="absolute bottom-3 left-3 h-12 w-12 overflow-hidden rounded-2xl border-2 border-white shadow-lg">
+                      <Image
+                        src={card.avatar}
+                        alt="Kanal profil"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                      />
+                    </span>
+                  )}
+                </div>
+                <div className="px-4 pb-4">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold ${card.ctaClass}`}
+                  >
+                    {card.cta}
+                  </span>
+                </div>
+              </>
+            );
+
+            const className =
+              "group flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(8,32,64,0.45)]";
+
+            if (card.internal) {
+              return (
+                <Link key={card.id} href={card.href} className={className}>
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <a
+                key={card.id}
+                href={card.href}
+                target="_blank"
+                rel="noreferrer"
+                className={className}
+              >
+                {inner}
+              </a>
+            );
+          })}
+        </div>
+
+        <div className="overflow-hidden rounded-[24px] border border-border bg-card shadow-sm">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
+            {values.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className={`flex items-center gap-3 px-5 py-5 ${
+                    index < values.length - 1
+                      ? "border-b border-border sm:border-b-0 lg:border-r"
+                      : ""
+                  }`}
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]">
+                    <Icon size={20} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--brand-ink)] dark:text-foreground">
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-muted">{item.text}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* CATEGORY / CHANNEL CARDS */}
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {categoryCards.map((card) => {
-          const inner = (
-            <>
-              <div className="flex items-start justify-between gap-3 p-4 pb-2">
-                <div>
-                  <h3 className="text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
-                    {card.title}
-                  </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-muted">
-                    {card.description}
-                  </p>
-                </div>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-[var(--brand-teal)] shadow-sm">
-                  <ArrowRight size={14} />
-                </span>
-              </div>
-
-              <div className="relative mx-4 mb-3 aspect-[5/4] overflow-hidden rounded-2xl bg-[var(--shell-bg)]">
-                <Image
-                  src={card.image}
-                  alt={card.title}
-                  fill
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                  sizes="(max-width:768px) 100vw, 20vw"
-                  unoptimized
-                />
-                {card.avatar && (
-                  <span className="absolute bottom-3 left-3 h-12 w-12 overflow-hidden rounded-2xl border-2 border-white shadow-lg">
-                    <Image
-                      src={card.avatar}
-                      alt="Kanal profil"
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
-                    />
-                  </span>
-                )}
-              </div>
-
-              <div className="px-4 pb-4">
-                <span
-                  className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold ${card.ctaClass}`}
-                >
-                  {card.cta}
-                </span>
-              </div>
-            </>
-          );
-
-          const className =
-            "group flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(8,32,64,0.45)]";
-
-          if (card.internal) {
-            return (
-              <Link key={card.id} href={card.href} className={className}>
-                {inner}
-              </Link>
-            );
-          }
-
+      {/* CARGO */}
+      <section id="cargo" className="scroll-mt-24 space-y-8">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold">Cargo bo‘limi</h2>
+          <p className="max-w-2xl text-muted">
+            Yangi, yo‘ldagi va Toshkentga kelgan tovarlarni kuzating.
+          </p>
+        </div>
+        {cargoSections.map((section) => {
+          const list = items.filter((item) => item.category === section.category);
           return (
-            <a
-              key={card.id}
-              href={card.href}
-              target="_blank"
-              rel="noreferrer"
-              className={className}
-            >
-              {inner}
-            </a>
+            <div key={section.id} className="space-y-4">
+              <div>
+                <h3 className="text-2xl font-bold">
+                  {CATEGORY_LABELS[section.category]}
+                </h3>
+                <p className="text-sm text-muted">{list.length} ta tovar</p>
+              </div>
+              {list.length ? (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {list.map((item) => (
+                    <ItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <div className="card p-6 text-muted">Hozircha tovar yo‘q.</div>
+              )}
+            </div>
           );
         })}
       </section>
 
-      {/* VALUE BAR */}
-      <section className="overflow-hidden rounded-[24px] border border-border bg-card shadow-sm">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-          {values.map((item, index) => {
-            const Icon = item.icon;
+      {/* WAREHOUSES */}
+      <section id="warehouses" className="scroll-mt-24 space-y-8">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold">Omborlar</h2>
+          <p className="max-w-2xl text-muted">
+            Xitoy omborlari — manzillar, xarita va Google Maps.
+          </p>
+        </div>
+        <div className="space-y-5">
+          <h3 className="text-2xl font-bold">Xitoydagi omborlar ({china.length})</h3>
+          <div className="space-y-6">
+            {china.map((warehouse) => (
+              <WarehouseDetailCard key={warehouse.id} warehouse={warehouse} />
+            ))}
+            {!china.length && (
+              <div className="card p-6 text-muted">Hozircha Xitoy ombori yo‘q.</div>
+            )}
+          </div>
+        </div>
+        {tashkent.length > 0 && (
+          <div className="space-y-5">
+            <h3 className="text-2xl font-bold">
+              Toshkentdagi omborlar ({tashkent.length})
+            </h3>
+            <div className="space-y-6">
+              {tashkent.map((warehouse) => (
+                <WarehouseDetailCard key={warehouse.id} warehouse={warehouse} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* OPERATORS */}
+      <section id="operators" className="scroll-mt-24 space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground">
+            Operatorlar
+          </h2>
+          <p className="max-w-2xl text-sm text-muted">
+            Bog‘lanish uchun telefon raqami va Telegram manzili.
+          </p>
+        </div>
+        {operators.length ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {operators.map((operator) => (
+              <OperatorCard key={operator.id} operator={operator} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[24px] border border-border bg-card p-6 text-muted">
+            Hozircha operator qo‘shilmagan.
+          </div>
+        )}
+      </section>
+
+      {/* CHANNELS */}
+      <section id="channels" className="scroll-mt-24 space-y-6">
+        <div className="rounded-[28px] border border-border bg-card p-6 shadow-sm md:p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--brand-teal)]">
+                Aloqa kanallari
+              </p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground">
+                Kanallar
+              </h2>
+              <p className="mt-2 max-w-xl text-sm text-muted">
+                Rasmiy Telegram kanallar — premium kartalar bilan.
+              </p>
+            </div>
+            <a
+              href={TAPLINK_SOURCE}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl border border-border px-4 py-2.5 text-sm font-semibold text-[var(--brand-ink)] dark:text-foreground"
+            >
+              Asl TapLink <ArrowRight size={14} />
+            </a>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {TELEGRAM_CHANNELS.map((channel) => {
+            const meta = channelMeta[channel.id] || channelMeta.admin;
             return (
-              <div
-                key={item.title}
-                className={`flex items-center gap-3 px-5 py-5 ${
-                  index < values.length - 1
-                    ? "border-b border-border sm:border-b-0 lg:border-r"
-                    : ""
-                }`}
+              <a
+                key={channel.id}
+                href={channel.href}
+                target={channel.kind === "email" ? undefined : "_blank"}
+                rel="noreferrer"
+                className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]">
-                  <Icon size={20} />
-                </span>
-                <div>
-                  <p className="text-sm font-bold text-[var(--brand-ink)] dark:text-foreground">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted">{item.text}</p>
+                <div className="flex items-start justify-between gap-3 p-4 pb-2">
+                  <div>
+                    <h3 className="text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
+                      {channel.title}
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">
+                      {meta.description}
+                    </p>
+                    {channel.username && (
+                      <p className="mt-1 text-xs font-semibold text-[var(--brand-teal)]">
+                        {channel.username}
+                      </p>
+                    )}
+                  </div>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-[var(--brand-teal)] shadow-sm">
+                    <ArrowRight size={14} />
+                  </span>
                 </div>
-              </div>
+                <div className="relative mx-4 mb-3 aspect-[5/4] overflow-hidden rounded-2xl bg-[var(--shell-bg)]">
+                  <Image
+                    src={meta.image}
+                    alt={channel.title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="(max-width:768px) 100vw, 33vw"
+                    unoptimized
+                  />
+                  {channel.image && (
+                    <span className="absolute bottom-3 left-3 h-14 w-14 overflow-hidden rounded-2xl border-[3px] border-white shadow-xl">
+                      <Image
+                        src={channel.image}
+                        alt={`${channel.title} profil`}
+                        width={56}
+                        height={56}
+                        className="h-full w-full object-cover"
+                      />
+                    </span>
+                  )}
+                </div>
+                <div className="px-4 pb-4">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold ${meta.ctaClass}`}
+                  >
+                    {meta.cta}
+                  </span>
+                </div>
+              </a>
             );
           })}
         </div>

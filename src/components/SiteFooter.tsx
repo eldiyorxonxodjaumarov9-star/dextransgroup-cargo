@@ -3,11 +3,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { TELEGRAM_CHANNELS, TAPLINK_SOURCE } from "@/lib/channels";
 
 const footerLinks = [
-  { href: "/", label: "Bosh sahifa" },
-  { href: "/cargo", label: "Cargo" },
-  { href: "/warehouses", label: "Omborlar" },
-  { href: "/operators", label: "Operatorlar" },
-  { href: "/channels", label: "Kanallar" },
+  { href: "/#home", label: "Bosh sahifa" },
+  { href: "/#cargo", label: "Cargo" },
+  { href: "/#warehouses", label: "Omborlar" },
+  { href: "/#operators", label: "Operatorlar" },
+  { href: "/#channels", label: "Kanallar" },
 ];
 
 export function SiteFooter() {
@@ -15,7 +15,7 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-10 border-t border-border bg-[var(--brand-navy)] text-white">
-      <div className="grid gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_1fr_1fr]">
         <div className="space-y-4">
           <BrandLogo variant="worldwide" className="max-w-[200px]" />
           <p className="max-w-sm text-sm leading-relaxed text-white/70">

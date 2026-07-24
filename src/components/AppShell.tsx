@@ -1,63 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ChevronDown,
-  Home,
   Menu,
   Moon,
-  Package,
-  Radio,
-  Shield,
   Sun,
-  Users,
-  Warehouse,
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/", label: "Bosh sahifa", icon: Home, scrollable: true },
-  { href: "/cargo", label: "Cargo", icon: Package, scrollable: true },
-  { href: "/warehouses", label: "Omborlar", icon: Warehouse, scrollable: true },
-  { href: "/operators", label: "Operatorlar", icon: Users, scrollable: true },
-  { href: "/channels", label: "Kanallar", icon: Radio, scrollable: true },
-  { href: "/admin", label: "Admin", icon: Shield, scrollable: false },
+const publicNav = [
+  { id: "home", href: "/#home", label: "Bosh sahifa" },
+  { id: "cargo", href: "/#cargo", label: "Cargo" },
+  { id: "warehouses", href: "/#warehouses", label: "Omborlar" },
+  { id: "operators", href: "/#operators", label: "Operatorlar" },
+  { id: "channels", href: "/#channels", label: "Kanallar" },
 ];
-
-const scrollRoutes = navItems.filter((item) => item.scrollable).map((item) => item.href);
-
-function normalizePath(pathname: string) {
-  if (pathname.length > 1 && pathname.endsWith("/")) {
-    return pathname.slice(0, -1);
-  }
-  return pathname || "/";
-}
-
-function resolveScrollIndex(pathname: string) {
-  const path = normalizePath(pathname);
-  if (path === "/") return 0;
-  return scrollRoutes.findIndex(
-    (href) => href !== "/" && path.startsWith(href)
-  );
-}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const isAdmin = pathname.startsWith("/admin");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [transitioning, setTransitioning] = useState(false);
-  const [enterKey, setEnterKey] = useState(0);
-  const busyRef = useRef(false);
-  const intentRef = useRef(0);
-  const touchYRef = useRef<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount gate
@@ -67,209 +39,58 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isDark = mounted && theme === "dark";
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });
-    setEnterKey((k) => k + 1);
-    setTransitioning(false);
-    busyRef.current = false;
-    intentRef.current = 0;
-  }, [pathname]);
+    if (isAdmin) return;
 
-  useEffect(() => {
-    const path = normalizePath(pathname);
-    if (path.startsWith("/admin")) return;
+    const ids = publicNav.map((item) => item.id);
+    const nodes = ids
+      .map((id) => document.getElementById(id))
+      .filter((node): node is HTMLElement => Boolean(node));
 
-    const navigate = (direction: 1 | -1) => {
-      if (busyRef.current || transitioning) return;
-      const index = resolveScrollIndex(pathname);
-      if (index < 0) return;
-      const next = index + direction;
-      if (next < 0 || next >= scrollRoutes.length) return;
+    if (!nodes.length) return;
 
-      busyRef.current = true;
-      intentRef.current = 0;
-      setTransitioning(true);
-
-      const href = scrollRoutes[next];
-      window.setTimeout(() => {
-        router.push(href);
-      }, 220);
-    };
-
-    const tryEdgeNav = (direction: 1 | -1, strength: number) => {
-      const doc = document.documentElement;
-      const scrollable = doc.scrollHeight > window.innerHeight + 32;
-      const atTop = window.scrollY <= 4;
-      const atBottom =
-        window.innerHeight + window.scrollY >= doc.scrollHeight - 4;
-
-      if (scrollable) {
-        if (direction === 1 && !atBottom) {
-          intentRef.current = 0;
-          return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]?.target?.id) {
+          setActiveSection(visible[0].target.id);
         }
-        if (direction === -1 && !atTop) {
-          intentRef.current = 0;
-          return;
-        }
+      },
+      {
+        rootMargin: "-20% 0px -55% 0px",
+        threshold: [0.15, 0.35, 0.55],
       }
+    );
 
-      intentRef.current += strength;
-      const need = scrollable ? 90 : 140;
-      if (intentRef.current >= need) {
-        navigate(direction);
-      }
-    };
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [isAdmin, pathname]);
 
-    const onWheel = (event: WheelEvent) => {
-      if (busyRef.current || transitioning) return;
-      if (Math.abs(event.deltaY) < 8) return;
+  function scrollToSection(id: string) {
+    setMenuOpen(false);
+    const node = document.getElementById(id);
+    if (node) {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveSection(id);
+      window.history.replaceState(null, "", `/#${id}`);
+      return;
+    }
+    window.location.href = `/#${id}`;
+  }
 
-      const direction: 1 | -1 = event.deltaY > 0 ? 1 : -1;
-      // Opposite scroll cancels pending intent
-      if (
-        (direction === 1 && intentRef.current < 0) ||
-        (direction === -1 && intentRef.current > 0)
-      ) {
-        intentRef.current = 0;
-      }
-      tryEdgeNav(direction, Math.min(Math.abs(event.deltaY), 80));
-    };
-
-    const decay = window.setInterval(() => {
-      if (busyRef.current) return;
-      intentRef.current *= 0.82;
-      if (Math.abs(intentRef.current) < 8) intentRef.current = 0;
-    }, 120);
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (busyRef.current || transitioning) return;
-      if (event.key === "PageDown") {
-        event.preventDefault();
-        navigate(1);
-      } else if (event.key === "PageUp") {
-        event.preventDefault();
-        navigate(-1);
-      }
-    };
-
-    const onTouchStart = (event: TouchEvent) => {
-      touchYRef.current = event.touches[0]?.clientY ?? null;
-    };
-
-    const onTouchEnd = (event: TouchEvent) => {
-      if (busyRef.current || transitioning || touchYRef.current == null) return;
-      const endY = event.changedTouches[0]?.clientY ?? touchYRef.current;
-      const delta = touchYRef.current - endY;
-      touchYRef.current = null;
-      if (Math.abs(delta) < 50) return;
-      tryEdgeNav(delta > 0 ? 1 : -1, Math.abs(delta));
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: true });
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-
-    return () => {
-      window.clearInterval(decay);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [pathname, router, transitioning]);
-
-  return (
-    <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
-      {sidebarOpen && (
-        <button
-          type="button"
-          aria-label="Menyuni yopish"
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-[var(--sidebar)] px-3 py-5 text-[var(--sidebar-fg)] transition-transform duration-300 lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div className="mb-6 flex items-start justify-between gap-2 px-2">
-          <Link
-            href="/"
-            className="block w-full max-w-[210px]"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <BrandLogo
-              variant="worldwide"
-              priority
-              className="w-full max-w-[210px]"
-            />
-          </Link>
-          <button
-            type="button"
-            className="shrink-0 rounded-xl border border-white/15 p-2 text-white/80 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <nav className="flex flex-1 flex-col gap-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  "relative flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition",
-                  active
-                    ? "bg-white/12 text-white"
-                    : "text-[var(--sidebar-muted)] hover:bg-white/8 hover:text-white"
-                )}
-              >
-                {active && (
-                  <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[var(--sidebar-active)]" />
-                )}
-                <Icon size={18} />
-                {item.label}
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
+        <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+            <Link href="/" className="shrink-0">
+              <BrandLogo variant="cargo" className="h-9 w-auto max-w-[180px]" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/#home" className="btn btn-secondary !px-3 !py-2 text-xs">
+                Saytga qaytish
               </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto border-t border-white/10 px-2 pt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
-            Integrating the Asian Frontier
-          </p>
-        </div>
-      </aside>
-
-      <div className="flex min-h-screen flex-col lg:pl-[280px]">
-        <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur">
-          <div className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <button
-                type="button"
-                className="rounded-xl border border-border p-2.5 lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Menyu"
-              >
-                <Menu size={18} />
-              </button>
-              <Link href="/" className="hidden min-w-0 sm:block">
-                <BrandLogo variant="cargo" className="h-10 w-auto max-w-[200px]" />
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 className="rounded-xl border border-border p-2.5"
@@ -278,25 +99,108 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
               </button>
-              <div className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-semibold">
-                UZ
-                <ChevronDown size={14} className="text-muted" />
-              </div>
             </div>
           </div>
         </header>
-
-        <div
-          key={enterKey}
-          className={cn(
-            "flex flex-1 flex-col page-shell-enter",
-            transitioning && "page-shell-exit"
-          )}
-        >
-          <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
-          <SiteFooter />
-        </div>
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+        <SiteFooter />
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
+        <div className="mx-auto flex h-[70px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <button
+            type="button"
+            className="shrink-0"
+            onClick={() => scrollToSection("home")}
+            aria-label="Bosh sahifa"
+          >
+            <BrandLogo variant="cargo" className="h-10 w-auto max-w-[190px]" />
+          </button>
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            {publicNav.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-sm font-semibold transition",
+                  activeSection === item.id
+                    ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
+                    : "text-muted hover:bg-background hover:text-foreground"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+            <Link
+              href="/admin"
+              className="rounded-xl px-3 py-2 text-sm font-semibold text-muted transition hover:bg-background hover:text-foreground"
+            >
+              Admin
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-xl border border-border p-2.5"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              aria-label="Mavzu"
+            >
+              {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+            </button>
+            <div className="hidden items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-semibold sm:flex">
+              UZ
+              <ChevronDown size={14} className="text-muted" />
+            </div>
+            <button
+              type="button"
+              className="rounded-xl border border-border p-2.5 lg:hidden"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label="Menyu"
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <div className="border-t border-border bg-card px-4 py-3 lg:hidden">
+            <div className="flex flex-col gap-1">
+              {publicNav.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  className={cn(
+                    "rounded-xl px-3 py-3 text-left text-sm font-semibold",
+                    activeSection === item.id
+                      ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
+                      : "text-foreground"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <Link
+                href="/admin"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3 py-3 text-sm font-semibold text-foreground"
+              >
+                Admin
+              </Link>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</div>
+      <SiteFooter />
     </div>
   );
 }
