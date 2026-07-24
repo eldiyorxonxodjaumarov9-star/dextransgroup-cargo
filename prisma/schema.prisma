@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Warehouse {
+  id           String      @id @default(cuid())
+  name         String
+  region       String
+  city         String
+  address      String
+  phone        String
+  telegramUrl  String?
+  locationUrl  String?
+  country      String?
+  province     String?
+  district     String?
+  receiver     String?
+  phone2       String?
+  workingHours String?
+  notes        String?
+  latitude     Float?
+  longitude    Float?
+  entryType    String      @default("MANUAL")
+  pdfUrl       String?
+  pdfFileName  String?
+  pdfData      Bytes?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  items        CargoItem[]
+  operators    Operator[]
+}
+
+model Operator {
+  id          String      @id @default(cuid())
+  name        String
+  phone       String
+  telegram    String?
+  isActive    Boolean     @default(true)
+  warehouseId String?
+  warehouse   Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  items       CargoItem[]
+}
+
+model CargoItem {
+  id           String     @id @default(cuid())
+  name         String
+  trackNumber  String     @unique
+  imageUrl     String?
+  description  String?
+  price        String?
+  category     String
+  status       String
+  date         DateTime
+  etaDate      DateTime?
+  telegramUrl  String?
+  locationUrl  String?
+  chinaAddress String?
+  notes        String?
+  entryType    String     @default("MANUAL")
+  pdfUrl       String?
+  pdfFileName  String?
+  pdfData      Bytes?
+  warehouseId  String?
+  warehouse    Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  operatorId   String?
+  operator     Operator?  @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
