@@ -111,13 +111,12 @@ Do not commit `.env`, `*.db`, `node_modules`, or `.next`.
 2. Import the project in Vercel.
 3. Create a PostgreSQL database (Vercel Postgres / Neon / Supabase).
 4. Set environment variables in Vercel:
-   - `DATABASE_URL`
-   - `DIRECT_URL`
-   - `SESSION_SECRET`
-   - `ADMIN_USERNAME`
-   - `ADMIN_PASSWORD`
+   - `DATABASE_URL` (required)
+   - `DIRECT_URL` (recommended; if missing, app copies `DATABASE_URL`)
+   - `SESSION_SECRET` (required for login)
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` (for seed)
 5. Deploy.
-6. Run migrations once (Vercel CLI or host SQL console):
+6. Run migrations once against production DB:
 
 ```bash
 npx prisma migrate deploy

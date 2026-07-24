@@ -11,7 +11,16 @@ export default async function AdminReportsPage() {
   if (!session) redirect("/admin/login");
 
   const items = await prisma.cargoItem.findMany({
-    include: { warehouse: true, operator: true },
+    select: {
+      id: true,
+      name: true,
+      trackNumber: true,
+      category: true,
+      status: true,
+      date: true,
+      warehouse: { select: { name: true } },
+      operator: { select: { name: true } },
+    },
     orderBy: { date: "desc" },
   });
 

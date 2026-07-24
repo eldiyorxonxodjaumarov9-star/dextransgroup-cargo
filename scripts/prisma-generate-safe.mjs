@@ -2,6 +2,10 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+// Ensure DIRECT_URL fallback before generate
+await import(pathToFileURL(path.join(process.cwd(), "scripts", "prisma-env.mjs")).href);
 
 const root = process.cwd();
 const isWindows = os.platform() === "win32";

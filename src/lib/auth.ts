@@ -1,3 +1,4 @@
+import "@/lib/env";
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 import bcrypt from "bcryptjs";
@@ -8,20 +9,28 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
 function getSecret() {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("SESSION_SECRET is required in production");
-    }
-    return "dextrans-cargo-dev-secret";
+  if (secret) return secret;
+
+  if (process.env.NODE_ENV === "production") {
+    // Do not throw during page render — login/session simply fails closed.
+    console.error("[auth] SESSION_SECRET is missing in production");
+    return "";
   }
-  return secret;
+
+  return "dextrans-cargo-dev-secret";
 }
 
 function sign(value: string) {
-  return createHmac("sha256", getSecret()).update(value).digest("hex");
+  const secret = getSecret();
+  if (!secret) return "";
+  return createHmac("sha256", secret).update(value).digest("hex");
 }
 
 export function createSessionToken(userId: string, username: string) {
+  const secret = getSecret();
+  if (!secret) {
+    throw new Error("SESSION_SECRET is required to create a session");
+  }
   const expires = Date.now() + SESSION_TTL_MS;
   const payload = `${userId}.${username}.${expires}`;
   const signature = sign(payload);
@@ -30,12 +39,15 @@ export function createSessionToken(userId: string, username: string) {
 
 export function verifySessionToken(token: string | undefined) {
   if (!token) return null;
+  if (!getSecret()) return null;
+
   const parts = token.split(".");
   if (parts.length !== 4) return null;
 
   const [userId, username, expiresStr, signature] = parts;
   const payload = `${userId}.${username}.${expiresStr}`;
   const expected = sign(payload);
+  if (!expected) return null;
 
   try {
     const a = Buffer.from(signature);

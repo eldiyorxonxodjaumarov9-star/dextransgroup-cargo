@@ -1,12 +1,18 @@
 import { OperatorCard } from "@/components/OperatorCard";
 import { prisma } from "@/lib/prisma";
+import { safeQuery } from "@/lib/safe-query";
 
 export const dynamic = "force-dynamic";
 
 export default async function OperatorsPage() {
-  const operators = await prisma.operator.findMany({
-    orderBy: [{ isActive: "desc" }, { name: "asc" }],
-  });
+  const operators = await safeQuery(
+    "OperatorsPage",
+    () =>
+      prisma.operator.findMany({
+        orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      }),
+    []
+  );
 
   return (
     <div className="space-y-6">

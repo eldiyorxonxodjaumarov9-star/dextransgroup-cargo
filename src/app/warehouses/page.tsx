@@ -1,14 +1,20 @@
 import { WarehouseDetailCard } from "@/components/WarehouseDetailCard";
 import { warehouseListSelect } from "@/lib/warehouse-api";
 import { prisma } from "@/lib/prisma";
+import { safeQuery } from "@/lib/safe-query";
 
 export const dynamic = "force-dynamic";
 
 export default async function WarehousesPage() {
-  const warehouses = await prisma.warehouse.findMany({
-    select: warehouseListSelect,
-    orderBy: [{ region: "asc" }, { name: "asc" }],
-  });
+  const warehouses = await safeQuery(
+    "WarehousesPage",
+    () =>
+      prisma.warehouse.findMany({
+        select: warehouseListSelect,
+        orderBy: [{ region: "asc" }, { name: "asc" }],
+      }),
+    []
+  );
 
   const china = warehouses.filter((w) => w.region === "CHINA");
   const tashkent = warehouses.filter((w) => w.region === "TASHKENT");

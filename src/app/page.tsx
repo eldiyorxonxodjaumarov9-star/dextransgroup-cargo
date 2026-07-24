@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { safeQuery } from "@/lib/safe-query";
 
 export const dynamic = "force-dynamic";
 
@@ -79,9 +80,14 @@ const values = [
 ];
 
 export default async function HomePage() {
-  const warehouseCount = await prisma.warehouse.count({
-    where: { region: "CHINA" },
-  });
+  const warehouseCount = await safeQuery(
+    "HomePage.warehouseCount",
+    () =>
+      prisma.warehouse.count({
+        where: { region: "CHINA" },
+      }),
+    0
+  );
 
   return (
     <div className="space-y-6">

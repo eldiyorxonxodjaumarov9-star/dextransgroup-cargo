@@ -2,14 +2,20 @@ import { ItemCard } from "@/components/ItemCard";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { itemListInclude, sanitizeItem } from "@/lib/item-api";
 import { prisma } from "@/lib/prisma";
+import { safeQuery } from "@/lib/safe-query";
 
 export const dynamic = "force-dynamic";
 
 export default async function CargoPage() {
-  const rawItems = await prisma.cargoItem.findMany({
-    include: itemListInclude,
-    orderBy: { date: "desc" },
-  });
+  const rawItems = await safeQuery(
+    "CargoPage",
+    () =>
+      prisma.cargoItem.findMany({
+        include: itemListInclude,
+        orderBy: { date: "desc" },
+      }),
+    []
+  );
   const items = rawItems.map(sanitizeItem);
 
   const sections = [
