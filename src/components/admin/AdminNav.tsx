@@ -23,31 +23,35 @@ export function AdminNav({ username }: { username: string }) {
   }
 
   return (
-    <div className="card mb-6 p-4">
+    <div className="card mb-4 p-3 sm:mb-6 sm:p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="font-semibold">Admin panel</p>
-          <p className="text-sm text-muted">{username}</p>
+          <p className="truncate text-sm text-muted" title={username}>
+            {username}
+          </p>
         </div>
         <button type="button" className="btn btn-secondary text-sm" onClick={() => void logout()}>
           Chiqish
         </button>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "rounded-lg px-3 py-2 text-sm font-medium",
-              pathname === link.href
-                ? "bg-primary text-primary-foreground"
-                : "bg-background text-muted hover:text-foreground"
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
+      <div className="-mx-1 overflow-x-auto px-1 pb-1">
+        <div className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 py-2 text-sm font-medium",
+                pathname === link.href
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted hover:text-foreground"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

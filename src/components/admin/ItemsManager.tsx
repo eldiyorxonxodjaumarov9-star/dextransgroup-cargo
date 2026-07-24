@@ -186,7 +186,7 @@ export function ItemsManager({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={onSubmit} className="card grid gap-4 p-5 md:grid-cols-2">
+      <form onSubmit={onSubmit} className="card grid gap-4 p-4 sm:p-5 md:grid-cols-2">
         <div className="md:col-span-2 space-y-3">
           <h2 className="text-xl font-bold">
             {editingId ? "Tovarni tahrirlash" : "Yangi tovar qo‘shish"}
@@ -467,12 +467,12 @@ export function ItemsManager({
       </form>
 
       <div className="card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <h2 className="text-xl font-bold">Tovarlar ro‘yxati</h2>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base sm:w-auto sm:text-sm"
           >
             <option value="ALL">Barchasi</option>
             {CARGO_CATEGORIES.map((value) => (
@@ -483,7 +483,56 @@ export function ItemsManager({
           </select>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="space-y-3 p-3 md:hidden">
+          {filtered.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-border bg-background p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="break-words font-semibold">{item.name}</p>
+                  <p className="break-all text-xs text-muted" title={item.trackNumber}>
+                    {item.trackNumber}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <CategoryBadge category={item.category} />
+                  <StatusBadge status={item.status} />
+                </div>
+              </div>
+              <p className="mt-2 text-sm text-muted">{formatDate(item.date)}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.entryType === "PDF" && item.pdfUrl && (
+                  <a
+                    href={item.pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-secondary !min-h-10 !px-3 !py-2 text-xs"
+                  >
+                    PDF
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-secondary !min-h-10 !px-3 !py-2 text-xs"
+                  onClick={() => startEdit(item)}
+                >
+                  Tahrirlash
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger !min-h-10 !px-3 !py-2 text-xs"
+                  onClick={() => void removeItem(item.id)}
+                >
+                  O‘chirish
+                </button>
+              </div>
+            </div>
+          ))}
+          {!filtered.length && (
+            <p className="py-6 text-center text-sm text-muted">Tovar topilmadi</p>
+          )}
+        </div>
+
+        <div className="table-scroll hidden md:block">
           <table className="min-w-full text-left text-sm">
             <thead className="bg-background text-muted">
               <tr>
@@ -499,8 +548,16 @@ export function ItemsManager({
             <tbody>
               {filtered.map((item) => (
                 <tr key={item.id} className="border-t border-border">
-                  <td className="px-4 py-3 font-medium">{item.name}</td>
-                  <td className="px-4 py-3">{item.trackNumber}</td>
+                  <td className="max-w-[220px] px-4 py-3 font-medium">
+                    <span className="line-clamp-2 break-words" title={item.name}>
+                      {item.name}
+                    </span>
+                  </td>
+                  <td className="max-w-[160px] px-4 py-3">
+                    <span className="break-all" title={item.trackNumber}>
+                      {item.trackNumber}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
@@ -518,7 +575,7 @@ export function ItemsManager({
                   <td className="px-4 py-3">
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="px-4 py-3">{formatDate(item.date)}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{formatDate(item.date)}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       {item.entryType === "PDF" && item.pdfUrl && (
@@ -526,21 +583,21 @@ export function ItemsManager({
                           href={item.pdfUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="btn btn-secondary !px-3 !py-1 text-xs"
+                          className="btn btn-secondary !min-h-9 !px-3 !py-1 text-xs"
                         >
                           PDF
                         </a>
                       )}
                       <button
                         type="button"
-                        className="btn btn-secondary !px-3 !py-1 text-xs"
+                        className="btn btn-secondary !min-h-9 !px-3 !py-1 text-xs"
                         onClick={() => startEdit(item)}
                       >
                         Tahrirlash
                       </button>
                       <button
                         type="button"
-                        className="btn btn-danger !px-3 !py-1 text-xs"
+                        className="btn btn-danger !min-h-9 !px-3 !py-1 text-xs"
                         onClick={() => void removeItem(item.id)}
                       >
                         O‘chirish

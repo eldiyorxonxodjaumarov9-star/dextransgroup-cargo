@@ -39,6 +39,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isDark = mounted && theme === "dark";
 
   useEffect(() => {
+    document.body.classList.toggle("nav-locked", menuOpen);
+    return () => document.body.classList.remove("nav-locked");
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
+  useEffect(() => {
     if (isAdmin) return;
 
     const ids = publicNav.map((item) => item.id);
@@ -58,8 +72,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
       },
       {
-        rootMargin: "-20% 0px -55% 0px",
-        threshold: [0.15, 0.35, 0.55],
+        rootMargin: "-18% 0px -55% 0px",
+        threshold: [0.12, 0.3, 0.5],
       }
     );
 
@@ -81,19 +95,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
-        <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-            <Link href="/" className="shrink-0">
-              <BrandLogo variant="cargo" className="h-9 w-auto max-w-[180px]" />
+      <div className="min-h-[100dvh] bg-[var(--shell-bg)] text-foreground">
+        <header className="sticky-header border-b border-border bg-card/95 backdrop-blur">
+          <div className="page-wrap flex h-16 items-center justify-between gap-3">
+            <Link href="/" className="min-w-0 shrink">
+              <BrandLogo
+                variant="cargo"
+                className="h-8 w-auto max-w-[min(160px,42vw)] sm:h-9 sm:max-w-[180px]"
+              />
             </Link>
-            <div className="flex items-center gap-2">
-              <Link href="/#home" className="btn btn-secondary !px-3 !py-2 text-xs">
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href="/#home"
+                className="btn btn-secondary !min-h-10 !px-3 !py-2 text-xs"
+              >
                 Saytga qaytish
               </Link>
               <button
                 type="button"
-                className="rounded-xl border border-border p-2.5"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
                 aria-label="Mavzu"
               >
@@ -102,26 +122,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+        <main className="page-wrap py-4 sm:py-6">{children}</main>
         <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-[70px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+    <div className="min-h-[100dvh] bg-[var(--shell-bg)] text-foreground">
+      <header className="sticky-header border-b border-border bg-card/95 backdrop-blur">
+        <div className="page-wrap flex h-[70px] items-center justify-between gap-2 sm:gap-3">
           <button
             type="button"
-            className="shrink-0"
+            className="min-w-0 shrink"
             onClick={() => scrollToSection("home")}
             aria-label="Bosh sahifa"
           >
-            <BrandLogo variant="cargo" className="h-10 w-auto max-w-[190px]" />
+            <BrandLogo
+              variant="cargo"
+              className="h-8 w-auto max-w-[min(170px,48vw)] sm:h-10 sm:max-w-[190px]"
+            />
           </button>
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Asosiy menyu">
             {publicNav.map((item) => (
               <button
                 key={item.id}
@@ -145,10 +168,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="rounded-xl border border-border p-2.5"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
               onClick={() => setTheme(isDark ? "light" : "dark")}
               aria-label="Mavzu"
             >
@@ -160,28 +183,48 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <button
               type="button"
-              className="rounded-xl border border-border p-2.5 lg:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border lg:hidden"
               onClick={() => setMenuOpen((open) => !open)}
-              aria-label="Menyu"
+              aria-label={menuOpen ? "Menyuni yopish" : "Menyuni ochish"}
+              aria-expanded={menuOpen}
             >
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
+      </header>
 
-        {menuOpen && (
-          <div className="border-t border-border bg-card px-4 py-3 lg:hidden">
-            <div className="flex flex-col gap-1">
+      {menuOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/45"
+            aria-label="Menyuni yopish"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className="absolute inset-y-0 right-0 flex w-[min(320px,88vw)] flex-col border-l border-border bg-card shadow-2xl safe-bottom">
+            <div className="flex items-center justify-between border-b border-border px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
+              <p className="text-sm font-bold">Menyu</p>
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Yopish"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Mobil menyu">
               {publicNav.map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => scrollToSection(item.id)}
                   className={cn(
-                    "rounded-xl px-3 py-3 text-left text-sm font-semibold",
+                    "min-h-11 rounded-xl px-3 py-3 text-left text-sm font-semibold",
                     activeSection === item.id
                       ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
-                      : "text-foreground"
+                      : "text-foreground hover:bg-background"
                   )}
                 >
                   {item.label}
@@ -190,16 +233,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 href="/admin"
                 onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-3 py-3 text-sm font-semibold text-foreground"
+                className="min-h-11 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-background"
               >
                 Admin
               </Link>
-            </div>
+            </nav>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</div>
+      <div className="page-wrap py-4 sm:py-6">{children}</div>
       <SiteFooter />
     </div>
   );

@@ -14,10 +14,10 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-10 border-t border-border bg-[var(--brand-navy)] text-white">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_1fr_1fr]">
+    <footer className="mt-10 border-t border-border bg-[var(--brand-navy)] text-white safe-bottom">
+      <div className="page-wrap grid gap-8 py-8 sm:py-10 lg:grid-cols-[1.2fr_1fr_1fr]">
         <div className="space-y-4">
-          <BrandLogo variant="worldwide" className="max-w-[200px]" />
+          <BrandLogo variant="worldwide" className="max-w-[min(200px,70vw)]" />
           <p className="max-w-sm text-sm leading-relaxed text-white/70">
             Dextrans Group Cargo — Xitoy omborlari, yuk kuzatuvi va tezkor
             logistika. Integrating the Asian Frontier.
@@ -31,7 +31,7 @@ export function SiteFooter() {
           <ul className="space-y-2 text-sm">
             {footerLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-white/80 hover:text-white">
+                <Link href={link.href} className="inline-flex min-h-10 items-center text-white/80 hover:text-white">
                   {link.label}
                 </Link>
               </li>
@@ -52,7 +52,7 @@ export function SiteFooter() {
                     href={channel.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-white"
+                    className="inline-flex min-h-10 items-center break-all hover:text-white"
                   >
                     {channel.username || channel.title}
                   </a>
@@ -63,7 +63,7 @@ export function SiteFooter() {
                 href={TAPLINK_SOURCE}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-white"
+                className="inline-flex min-h-10 items-center hover:text-white"
               >
                 TapLink
               </a>

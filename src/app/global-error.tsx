@@ -17,13 +17,13 @@ export default function GlobalError({
           fontFamily: "system-ui, sans-serif",
           background: "#eef2f5",
           color: "#0a1a28",
-          minHeight: "100vh",
+          minHeight: "100dvh",
           display: "grid",
           placeItems: "center",
-          padding: 24,
+          padding: "max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left))",
         }}
       >
-        <div style={{ maxWidth: 420, textAlign: "center" }}>
+        <div style={{ maxWidth: 420, width: "100%", textAlign: "center" }}>
           <h1 style={{ fontSize: 24, marginBottom: 8 }}>Server xatosi</h1>
           <p style={{ color: "#5b6b73", marginBottom: 16 }}>
             Ilova ishga tushmadi. Vercel environment variables va PostgreSQL

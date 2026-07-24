@@ -31,12 +31,12 @@ export function ItemCard({ item }: ItemCardProps) {
 
   if (isPdf) {
     return (
-      <article className="card overflow-hidden">
+      <article className="card min-w-0 overflow-hidden">
         <div className="space-y-3 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-sm text-muted">{item.trackNumber}</p>
+            <div className="min-w-0">
+              <h3 className="break-words text-lg font-semibold">{item.name}</h3>
+              <p className="break-all text-sm text-muted">{item.trackNumber}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <CategoryBadge category={item.category} />
@@ -44,9 +44,9 @@ export function ItemCard({ item }: ItemCardProps) {
             </div>
           </div>
 
-          <p className="flex items-center gap-2 text-sm text-muted">
-            <FileText size={15} className="text-[var(--brand-teal)]" />
-            {item.pdfFileName || "PDF hujjat"}
+          <p className="flex min-w-0 items-start gap-2 break-words text-sm text-muted">
+            <FileText size={15} className="mt-0.5 shrink-0 text-[var(--brand-teal)]" />
+            <span>{item.pdfFileName || "PDF hujjat"}</span>
           </p>
 
           <p className="text-sm">
@@ -54,14 +54,14 @@ export function ItemCard({ item }: ItemCardProps) {
           </p>
 
           {item.notes && (
-            <p className="text-sm text-muted">{item.notes}</p>
+            <p className="break-words text-sm text-muted">{item.notes}</p>
           )}
 
           <div className="overflow-hidden rounded-2xl border border-border bg-[#f8fafc] dark:bg-background">
             <iframe
               title={`${item.name} PDF`}
               src={`${item.pdfUrl!}#view=FitH`}
-              className="h-80 w-full"
+              className="h-[min(55dvh,22rem)] w-full sm:h-80"
             />
           </div>
 
@@ -79,7 +79,7 @@ export function ItemCard({ item }: ItemCardProps) {
   }
 
   return (
-    <article className="card overflow-hidden">
+    <article className="card min-w-0 overflow-hidden">
       <div className="relative aspect-[16/10] bg-background">
         {item.imageUrl ? (
           <Image
@@ -99,9 +99,9 @@ export function ItemCard({ item }: ItemCardProps) {
 
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h3 className="text-lg font-semibold">{item.name}</h3>
-            <p className="text-sm text-muted">{item.trackNumber}</p>
+          <div className="min-w-0">
+            <h3 className="break-words text-lg font-semibold">{item.name}</h3>
+            <p className="break-all text-sm text-muted">{item.trackNumber}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <CategoryBadge category={item.category} />
@@ -110,10 +110,10 @@ export function ItemCard({ item }: ItemCardProps) {
         </div>
 
         {item.description && (
-          <p className="text-sm text-muted">{item.description}</p>
+          <p className="break-words text-sm text-muted">{item.description}</p>
         )}
 
-        <div className="grid gap-1 text-sm">
+        <div className="grid gap-1 break-words text-sm">
           {item.price && (
             <p>
               <span className="text-muted">Narx:</span> {item.price}
@@ -139,7 +139,7 @@ export function ItemCard({ item }: ItemCardProps) {
               : "—"}
           </p>
           {item.chinaAddress && (
-            <p>
+            <p className="break-anywhere">
               <span className="text-muted">Xitoy manzili:</span>{" "}
               {item.chinaAddress}
             </p>
@@ -151,13 +151,13 @@ export function ItemCard({ item }: ItemCardProps) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
           {item.telegramUrl && (
             <a
               href={item.telegramUrl}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-primary text-sm"
+              className="btn btn-primary w-full text-sm sm:w-auto"
             >
               Telegram <ExternalLink size={14} />
             </a>
@@ -167,7 +167,7 @@ export function ItemCard({ item }: ItemCardProps) {
               href={item.locationUrl}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-secondary text-sm"
+              className="btn btn-secondary w-full text-sm sm:w-auto"
             >
               <MapPin size={14} /> Lokatsiya
             </a>

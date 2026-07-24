@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -20,6 +20,16 @@ export const metadata: Metadata = {
     "DextransGroup Cargo — Xitoydan Toshkentga yuk yetkazib berish va tovar kuzatuvi.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f6f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#07111f" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="uz" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-[100dvh] antialiased`}
       >
         <ThemeProvider>
           <AppShell>{children}</AppShell>

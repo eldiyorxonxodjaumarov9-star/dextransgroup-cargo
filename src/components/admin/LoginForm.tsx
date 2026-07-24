@@ -36,7 +36,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card mx-auto max-w-md space-y-4 p-6">
+    <form onSubmit={onSubmit} className="card mx-auto w-full max-w-md space-y-4 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl font-bold">Admin kirish</h1>
         <p className="text-sm text-muted">

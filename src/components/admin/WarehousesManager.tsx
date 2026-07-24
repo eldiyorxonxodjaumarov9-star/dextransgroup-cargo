@@ -172,7 +172,7 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={onSubmit} className="card grid gap-4 p-5 md:grid-cols-2">
+      <form onSubmit={onSubmit} className="card grid gap-4 p-4 sm:p-5 md:grid-cols-2">
         <div className="md:col-span-2 space-y-3">
           <h2 className="text-xl font-bold">
             {editingId ? "Omborni tahrirlash" : "Ombor qo‘shish"}

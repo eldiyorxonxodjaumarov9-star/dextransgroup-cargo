@@ -178,34 +178,37 @@ export default async function HomePage() {
 
       {/* HOME */}
       <section id="home" className="scroll-mt-24 space-y-6">
-        <div className="relative overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_25px_60px_-40px_rgba(8,32,64,0.45)]">
+        <div className="relative overflow-hidden rounded-[22px] border border-border bg-card shadow-[0_25px_60px_-40px_rgba(8,32,64,0.45)] sm:rounded-[28px]">
           <div className="absolute inset-0">
             <Image
               src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1800&q=80"
               alt="Dextrans logistics"
               fill
               priority
-              className="object-cover"
+              className="object-cover object-[center_35%] sm:object-center"
               sizes="100vw"
               unoptimized
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)] via-[var(--brand-navy)]/92 to-[var(--brand-teal)]/35" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[var(--brand-navy)] via-[var(--brand-navy)]/94 to-[var(--brand-navy)]/88 sm:bg-gradient-to-r sm:from-[var(--brand-navy)] sm:via-[var(--brand-navy)]/92 sm:to-[var(--brand-teal)]/35" />
           </div>
 
-          <div className="relative grid gap-6 p-6 md:p-8 lg:grid-cols-[1.35fr_0.75fr] lg:p-10">
-            <div className="max-w-2xl space-y-5">
+          <div className="relative grid gap-6 p-4 sm:p-6 md:p-8 lg:grid-cols-[1.35fr_0.75fr] lg:p-10">
+            <div className="min-w-0 max-w-2xl space-y-4 sm:space-y-5">
               <Image
                 src="/brand/logo-worldwide.png"
                 alt="dextrans Worldwide"
                 width={240}
                 height={88}
                 priority
-                className="h-14 w-auto max-w-[240px]"
+                className="h-11 w-auto max-w-[min(200px,70vw)] sm:h-14 sm:max-w-[240px]"
               />
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--accent)]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-xs sm:tracking-[0.24em]">
                 Sifat • Tezkorlik • Ishonch
               </p>
-              <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[56px]">
+              <h1
+                className="font-black leading-[1.08] tracking-tight text-white text-balance"
+                style={{ fontSize: "clamp(1.75rem, 6.5vw, 3.5rem)" }}
+              >
                 DEXTRANS GROUP
                 <br />
                 <span className="text-[var(--accent)]">CARGO</span>
@@ -215,22 +218,22 @@ export default async function HomePage() {
                 professional platformada.
               </p>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
                   href="#cargo"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/25"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/25 sm:w-auto"
                 >
                   Cargo yuklar
                 </a>
                 <a
                   href="#channels"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur sm:w-auto"
                 >
                   Aloqa kanallari
                 </a>
               </div>
 
-              <div className="grid gap-3 pt-2 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3">
                 {[
                   { icon: PackageCheck, value: "1250+", label: "Yuk yetkazib berildi" },
                   { icon: ShieldCheck, value: "98%", label: "Mamnun mijozlar" },
@@ -240,43 +243,43 @@ export default async function HomePage() {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm backdrop-blur"
+                      className="min-w-0 rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm backdrop-blur last:col-span-2 sm:last:col-span-1"
                     >
                       <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-teal)] text-white">
                         <Icon size={16} />
                       </div>
-                      <p className="text-xl font-black text-white">{item.value}</p>
-                      <p className="text-[11px] text-white/65">{item.label}</p>
+                      <p className="text-lg font-black text-white sm:text-xl">{item.value}</p>
+                      <p className="break-words text-[11px] text-white/65">{item.label}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            <div className="flex items-end justify-end">
-              <div className="w-full max-w-sm rounded-[24px] border border-white/20 bg-[var(--brand-navy-deep)]/80 p-5 text-white shadow-2xl backdrop-blur-xl">
+            <div className="flex items-end justify-stretch lg:justify-end">
+              <div className="w-full max-w-none rounded-[24px] border border-white/20 bg-[var(--brand-navy-deep)]/85 p-4 text-white shadow-2xl backdrop-blur-xl sm:p-5 lg:max-w-sm">
                 <p className="mb-4 text-sm font-bold">Tezkor menyu</p>
                 <div className="space-y-3">
                   <a
                     href="#warehouses"
-                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+                    className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg">
                       🇨🇳
                     </span>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-semibold">Xitoy omborlari</p>
                       <p className="text-xs text-white/70">{warehouseCount} ta manzil</p>
                     </div>
                   </a>
                   <a
                     href="#warehouses"
-                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+                    className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg">
                       🇺🇿
                     </span>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-semibold">Toshkent omborlari</p>
                       <p className="text-xs text-white/70">Admin orqali boshqariladi</p>
                     </div>
@@ -291,9 +294,9 @@ export default async function HomePage() {
           {categoryCards.map((card) => {
             const inner = (
               <>
-                <div className="flex items-start justify-between gap-3 p-4 pb-2">
-                  <div>
-                    <h3 className="text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
+                <div className="flex min-w-0 items-start justify-between gap-3 p-4 pb-2">
+                  <div className="min-w-0">
+                    <h3 className="break-words text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
                       {card.title}
                     </h3>
                     <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -392,7 +395,7 @@ export default async function HomePage() {
       {/* CARGO */}
       <section id="cargo" className="scroll-mt-24 space-y-8">
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold">Cargo bo‘limi</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Cargo bo‘limi</h2>
           <p className="max-w-2xl text-muted">
             Yangi, yo‘ldagi va Toshkentga kelgan tovarlarni kuzating.
           </p>
@@ -424,7 +427,7 @@ export default async function HomePage() {
       {/* WAREHOUSES */}
       <section id="warehouses" className="scroll-mt-24 space-y-8">
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold">Omborlar</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Omborlar</h2>
           <p className="max-w-2xl text-muted">
             Xitoy omborlari — manzillar, xarita va Google Maps.
           </p>
@@ -457,7 +460,7 @@ export default async function HomePage() {
       {/* OPERATORS */}
       <section id="operators" className="scroll-mt-24 space-y-6">
         <div className="space-y-2">
-          <h2 className="text-3xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground">
+          <h2 className="text-2xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground sm:text-3xl">
             Operatorlar
           </h2>
           <p className="max-w-2xl text-sm text-muted">
@@ -485,7 +488,7 @@ export default async function HomePage() {
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--brand-teal)]">
                 Aloqa kanallari
               </p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground">
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground sm:text-3xl">
                 Kanallar
               </h2>
               <p className="mt-2 max-w-xl text-sm text-muted">
@@ -512,18 +515,18 @@ export default async function HomePage() {
                 href={channel.href}
                 target={channel.kind === "email" ? undefined : "_blank"}
                 rel="noreferrer"
-                className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1"
+                className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1"
               >
-                <div className="flex items-start justify-between gap-3 p-4 pb-2">
-                  <div>
-                    <h3 className="text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
+                <div className="flex min-w-0 items-start justify-between gap-3 p-4 pb-2">
+                  <div className="min-w-0">
+                    <h3 className="break-words text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
                       {channel.title}
                     </h3>
                     <p className="mt-1 text-xs leading-relaxed text-muted">
                       {meta.description}
                     </p>
                     {channel.username && (
-                      <p className="mt-1 text-xs font-semibold text-[var(--brand-teal)]">
+                      <p className="mt-1 break-all text-xs font-semibold text-[var(--brand-teal)]">
                         {channel.username}
                       </p>
                     )}

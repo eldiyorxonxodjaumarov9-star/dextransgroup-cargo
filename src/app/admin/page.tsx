@@ -33,7 +33,7 @@ export default async function AdminPage() {
     <div className="space-y-4">
       <AdminNav username={session.username} />
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Boshqaruv paneli</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Boshqaruv paneli</h1>
         <p className="text-muted">
           Tovarlar, omborlar, operatorlar va hisobotlarni shu yerdan boshqaring.
         </p>

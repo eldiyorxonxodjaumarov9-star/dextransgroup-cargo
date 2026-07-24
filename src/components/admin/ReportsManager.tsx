@@ -111,14 +111,42 @@ export function ReportsManager({ items }: { items: Item[] }) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <p className="text-sm text-muted">{filtered.length} ta yozuv topildi</p>
-        <button type="button" className="btn btn-primary" onClick={exportExcel}>
+        <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={exportExcel}>
           <Download size={16} /> Excelga yuklab olish
         </button>
       </div>
 
-      <div className="card overflow-x-auto">
+      <div className="space-y-3 md:hidden">
+        {filtered.map((item) => (
+          <div key={item.id} className="card space-y-2 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="break-words font-semibold">{item.name}</p>
+                <p className="break-all text-xs text-muted" title={item.trackNumber}>
+                  {item.trackNumber}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <CategoryBadge category={item.category} />
+                <StatusBadge status={item.status} />
+              </div>
+            </div>
+            <p className="break-words text-sm text-muted">
+              Ombor: {item.warehouse?.name || "—"}
+            </p>
+            <p className="text-sm text-muted">
+              Operator: {item.operator?.name || "—"} · {formatDate(item.date)}
+            </p>
+          </div>
+        ))}
+        {!filtered.length && (
+          <div className="card p-6 text-center text-muted">Mos yozuv topilmadi</div>
+        )}
+      </div>
+
+      <div className="card table-scroll hidden md:block">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-background text-muted">
             <tr>
@@ -134,16 +162,28 @@ export function ReportsManager({ items }: { items: Item[] }) {
           <tbody>
             {filtered.map((item) => (
               <tr key={item.id} className="border-t border-border">
-                <td className="px-4 py-3 font-medium">{item.name}</td>
-                <td className="px-4 py-3">{item.trackNumber}</td>
+                <td className="max-w-[200px] px-4 py-3 font-medium">
+                  <span className="line-clamp-2 break-words" title={item.name}>
+                    {item.name}
+                  </span>
+                </td>
+                <td className="max-w-[140px] px-4 py-3">
+                  <span className="break-all" title={item.trackNumber}>
+                    {item.trackNumber}
+                  </span>
+                </td>
                 <td className="px-4 py-3">
                   <CategoryBadge category={item.category} />
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={item.status} />
                 </td>
-                <td className="px-4 py-3">{item.warehouse?.name || "—"}</td>
-                <td className="px-4 py-3">{formatDate(item.date)}</td>
+                <td className="max-w-[160px] px-4 py-3">
+                  <span className="line-clamp-2 break-words" title={item.warehouse?.name || undefined}>
+                    {item.warehouse?.name || "—"}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">{formatDate(item.date)}</td>
                 <td className="px-4 py-3">{item.operator?.name || "—"}</td>
               </tr>
             ))}

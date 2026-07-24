@@ -90,9 +90,9 @@ export default function WarehouseMap({
 
   if (!hasFixedCoords && loading) {
     return (
-      <div className="relative h-72 w-full overflow-hidden rounded-2xl border border-border bg-background">
+      <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-border sm:h-72 md:h-80">
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800" />
-        <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-muted">
+        <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm font-medium text-muted">
           Xarita yuklanmoqda...
         </div>
       </div>
@@ -101,9 +101,9 @@ export default function WarehouseMap({
 
   if (error || !coords) {
     return (
-      <div className="flex h-72 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-background px-6 text-center">
+      <div className="flex h-56 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-background px-4 text-center sm:h-72 sm:px-6 md:h-80">
         <p className="text-sm font-semibold text-foreground">Lokatsiya topilmadi</p>
-        <p className="max-w-sm text-sm text-muted">
+        <p className="max-w-sm break-words text-sm text-muted">
           {error || "Bu manzil bo‘yicha marker qo‘yib bo‘lmadi."}
         </p>
       </div>
@@ -111,7 +111,7 @@ export default function WarehouseMap({
   }
 
   return (
-    <div className="h-72 w-full overflow-hidden rounded-2xl border border-border shadow-inner">
+    <div className="h-56 w-full overflow-hidden rounded-2xl border border-border shadow-inner sm:h-72 md:h-80">
       <MapContainer
         center={[coords.lat, coords.lng]}
         zoom={15}
@@ -125,9 +125,9 @@ export default function WarehouseMap({
         <Recenter coords={coords} />
         <Marker position={[coords.lat, coords.lng]} icon={markerIcon}>
           <Popup>
-            <strong>{name}</strong>
+            <strong className="break-words">{name}</strong>
             <br />
-            {address}
+            <span className="break-words">{address}</span>
           </Popup>
         </Marker>
       </MapContainer>

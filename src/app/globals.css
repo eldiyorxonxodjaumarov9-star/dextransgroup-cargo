@@ -23,6 +23,8 @@
   --sidebar-fg: #ffffff;
   --sidebar-muted: #9bb0c4;
   --sidebar-active: #0a8a80;
+  --page-pad-x: 1rem;
+  --header-h: 4.375rem;
 }
 
 .dark {
@@ -60,14 +62,30 @@
   --font-mono: var(--font-geist-mono);
 }
 
-* {
+*,
+*::before,
+*::after {
   border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   background: var(--shell-bg);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body.nav-locked {
+  overflow: hidden;
+  touch-action: none;
 }
 
 a {
@@ -75,22 +93,53 @@ a {
   text-decoration: none;
 }
 
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
 input,
 select,
 textarea,
 button {
   font: inherit;
+  max-width: 100%;
 }
 
 .container-page {
   width: min(1180px, 100%);
   margin-inline: auto;
+  padding-inline: var(--page-pad-x);
+}
+
+.page-wrap {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-left: max(var(--page-pad-x), env(safe-area-inset-left));
+  padding-right: max(var(--page-pad-x), env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-pad-x: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-pad-x: 1.75rem;
+  }
 }
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 1.25rem;
+  min-width: 0;
 }
 
 .btn {
@@ -100,6 +149,7 @@ button {
   gap: 0.5rem;
   border-radius: 0.9rem;
   padding: 0.7rem 1.15rem;
+  min-height: 44px;
   font-weight: 600;
   transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -110,6 +160,11 @@ button {
 
 .btn:active {
   transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -140,10 +195,17 @@ button {
   background: #0f172a;
 }
 
+.leaflet-popup-content {
+  margin: 0.65rem 0.85rem !important;
+  max-width: min(240px, 70vw);
+  word-break: break-word;
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .field label {
@@ -160,8 +222,14 @@ button {
   background: var(--background);
   color: var(--foreground);
   border-radius: 0.85rem;
-  padding: 0.7rem 0.85rem;
+  padding: 0.75rem 0.85rem;
+  min-height: 44px;
+  font-size: 1rem;
   outline: none;
+}
+
+.field textarea {
+  min-height: 5.5rem;
 }
 
 .field input:focus,
@@ -178,6 +246,9 @@ button {
   padding: 0.2rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 600;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 .glass-stat {
@@ -186,46 +257,39 @@ button {
   backdrop-filter: blur(14px);
 }
 
-@keyframes page-shell-enter {
-  from {
-    opacity: 0.35;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
-@keyframes page-shell-exit {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0.2;
-    transform: translateY(-14px);
-  }
+.table-scroll table {
+  min-width: 720px;
 }
 
-.page-shell-enter {
-  animation: page-shell-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: opacity, transform;
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.page-shell-exit {
-  animation: page-shell-exit 0.22s ease-in both;
-  pointer-events: none;
-  will-change: opacity, transform;
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .page-shell-enter,
-  .page-shell-exit {
-    animation: none;
-  }
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top);
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

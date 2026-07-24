@@ -17,7 +17,7 @@ import type { WarehouseRegion } from "@/lib/types";
 const WarehouseMap = dynamic(() => import("@/components/WarehouseMap"), {
   ssr: false,
   loading: () => (
-    <div className="relative h-72 w-full overflow-hidden rounded-2xl border border-border">
+    <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-border sm:h-72 md:h-80">
       <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800" />
       <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-muted">
         Xarita yuklanmoqda...
@@ -53,10 +53,12 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5 border-b border-border/70 py-2 last:border-b-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">
         {label}
       </span>
-      <span className="text-sm font-medium text-foreground sm:text-right">{value}</span>
+      <span className="break-anywhere text-sm font-medium text-foreground sm:max-w-[65%] sm:text-right">
+        {value}
+      </span>
     </div>
   );
 }
@@ -66,18 +68,18 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
 
   if (isPdf) {
     return (
-      <article className="overflow-hidden rounded-3xl border border-border bg-card shadow-[0_10px_40px_-20px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-24px_rgba(8,32,64,0.45)]">
-        <div className="space-y-4 p-5 md:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-2">
+      <article className="min-w-0 overflow-hidden rounded-3xl border border-border bg-card shadow-[0_10px_40px_-20px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-24px_rgba(8,32,64,0.45)]">
+        <div className="space-y-4 p-4 sm:p-5 md:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 {REGION_LABELS[warehouse.region as WarehouseRegion] || warehouse.region} · PDF
               </p>
-              <h3 className="text-2xl font-bold tracking-tight">{warehouse.name}</h3>
+              <h3 className="break-words text-xl font-bold tracking-tight sm:text-2xl">{warehouse.name}</h3>
               {warehouse.pdfFileName && (
-                <p className="flex items-center gap-2 text-sm text-muted">
-                  <FileText size={15} className="text-[var(--brand-teal)]" />
-                  {warehouse.pdfFileName}
+                <p className="flex min-w-0 items-start gap-2 break-words text-sm text-muted">
+                  <FileText size={15} className="mt-0.5 shrink-0 text-[var(--brand-teal)]" />
+                  <span>{warehouse.pdfFileName}</span>
                 </p>
               )}
             </div>
@@ -85,14 +87,14 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
               href={warehouse.pdfUrl!}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-primary"
+              className="btn btn-primary w-full shrink-0 sm:w-auto"
             >
               PDF ni yangi oynada ochish <ExternalLink size={15} />
             </a>
           </div>
 
           {warehouse.notes && (
-            <p className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted">
+            <p className="break-words rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted">
               {warehouse.notes}
             </p>
           )}
@@ -101,7 +103,7 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
             <iframe
               title={`${warehouse.name} PDF`}
               src={`${warehouse.pdfUrl!}#view=FitH`}
-              className="h-[70vh] w-full min-h-[480px]"
+              className="h-[min(65dvh,28rem)] w-full min-h-[280px] sm:min-h-[400px]"
             />
           </div>
         </div>
@@ -119,14 +121,14 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
   });
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-border bg-card shadow-[0_10px_40px_-20px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-24px_rgba(15,23,42,0.45)] dark:shadow-[0_10px_40px_-18px_rgba(0,0,0,0.65)]">
+    <article className="min-w-0 overflow-hidden rounded-3xl border border-border bg-card shadow-[0_10px_40px_-20px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-24px_rgba(15,23,42,0.45)] dark:shadow-[0_10px_40px_-18px_rgba(0,0,0,0.65)]">
       <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-5 p-5 md:p-6">
+        <div className="min-w-0 space-y-5 p-4 sm:p-5 md:p-6">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               {REGION_LABELS[warehouse.region as WarehouseRegion] || warehouse.region}
             </p>
-            <h3 className="text-2xl font-bold tracking-tight">{warehouse.name}</h3>
+            <h3 className="break-words text-xl font-bold tracking-tight sm:text-2xl">{warehouse.name}</h3>
           </div>
 
           <div className="rounded-2xl border border-border bg-background/70 p-4">
@@ -149,7 +151,7 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
                 <MapPinned size={16} className="text-primary" />
                 Warehouse Location
               </div>
-              <p className="text-sm text-muted">
+              <p className="break-words text-sm text-muted">
                 {[warehouse.district, warehouse.city, warehouse.province, warehouse.country]
                   .filter(Boolean)
                   .join(" · ") || warehouse.address}
@@ -161,7 +163,7 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
                 <Phone size={16} className="text-primary" />
                 Phone Numbers
               </div>
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1 break-all text-sm">
                 <a href={`tel:${warehouse.phone}`} className="block hover:text-primary">
                   {warehouse.phone}
                 </a>
@@ -191,7 +193,7 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
                 <NotebookPen size={16} className="text-primary" />
                 Notes
               </div>
-              <p className="whitespace-pre-wrap text-sm text-muted">
+              <p className="break-words whitespace-pre-wrap text-sm text-muted">
                 {warehouse.notes || "Qo‘shimcha izoh yo‘q"}
               </p>
             </div>
@@ -207,8 +209,8 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
           </a>
         </div>
 
-        <div className="border-t border-border bg-background/40 p-5 md:p-6 lg:border-l lg:border-t-0">
-          <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="min-w-0 border-t border-border bg-background/40 p-4 sm:p-5 md:p-6 lg:border-l lg:border-t-0">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h4 className="font-semibold">Interactive Map</h4>
             <span className="text-xs text-muted">OpenStreetMap</span>
           </div>
