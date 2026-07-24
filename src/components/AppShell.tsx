@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
   Home,
@@ -16,31 +16,134 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Bosh sahifa", icon: Home },
-  { href: "/cargo", label: "Cargo", icon: Package },
-  { href: "/warehouses", label: "Omborlar", icon: Warehouse },
-  { href: "/operators", label: "Operatorlar", icon: Users },
-  { href: "/channels", label: "Kanallar", icon: Radio },
-  { href: "/admin", label: "Admin", icon: Shield },
+  { href: "/", label: "Bosh sahifa", icon: Home, scrollable: true },
+  { href: "/cargo", label: "Cargo", icon: Package, scrollable: true },
+  { href: "/warehouses", label: "Omborlar", icon: Warehouse, scrollable: true },
+  { href: "/operators", label: "Operatorlar", icon: Users, scrollable: true },
+  { href: "/channels", label: "Kanallar", icon: Radio, scrollable: true },
+  { href: "/admin", label: "Admin", icon: Shield, scrollable: false },
 ];
+
+const scrollRoutes = navItems.filter((item) => item.scrollable).map((item) => item.href);
+
+function normalizePath(pathname: string) {
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+  return pathname || "/";
+}
+
+function resolveScrollIndex(pathname: string) {
+  const path = normalizePath(pathname);
+  if (path === "/") return 0;
+  return scrollRoutes.findIndex(
+    (href) => href !== "/" && path.startsWith(href)
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const lockRef = useRef(false);
+  const touchYRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Avoid hydration mismatch for theme-dependent UI
     // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount gate
     setMounted(true);
   }, []);
+
   const isDark = mounted && theme === "dark";
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+  }, [pathname]);
+
+  useEffect(() => {
+    const path = normalizePath(pathname);
+    if (path.startsWith("/admin")) return;
+
+    const go = (direction: 1 | -1) => {
+      if (lockRef.current) return;
+      const index = resolveScrollIndex(pathname);
+      if (index < 0) return;
+      const next = index + direction;
+      if (next < 0 || next >= scrollRoutes.length) return;
+      lockRef.current = true;
+      router.push(scrollRoutes[next]);
+      window.setTimeout(() => {
+        lockRef.current = false;
+      }, 900);
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) < 40) return;
+      const scrollingDown = event.deltaY > 0;
+      const doc = document.documentElement;
+      const atTop = window.scrollY <= 8;
+      const atBottom =
+        window.innerHeight + window.scrollY >= doc.scrollHeight - 8;
+
+      if (scrollingDown && atBottom) {
+        event.preventDefault();
+        go(1);
+      } else if (!scrollingDown && atTop) {
+        event.preventDefault();
+        go(-1);
+      }
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "PageDown") {
+        event.preventDefault();
+        go(1);
+      } else if (event.key === "PageUp") {
+        event.preventDefault();
+        go(-1);
+      }
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      touchYRef.current = event.touches[0]?.clientY ?? null;
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (touchYRef.current == null) return;
+      const endY = event.changedTouches[0]?.clientY ?? touchYRef.current;
+      const delta = touchYRef.current - endY;
+      touchYRef.current = null;
+      if (Math.abs(delta) < 70) return;
+
+      const doc = document.documentElement;
+      const atTop = window.scrollY <= 8;
+      const atBottom =
+        window.innerHeight + window.scrollY >= doc.scrollHeight - 8;
+
+      if (delta > 0 && atBottom) go(1);
+      if (delta < 0 && atTop) go(-1);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [pathname, router]);
 
   return (
     <div className="min-h-screen bg-[var(--shell-bg)] text-foreground">
@@ -115,7 +218,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="lg:pl-[280px]">
+      <div className="flex min-h-screen flex-col lg:pl-[280px]">
         <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur">
           <div className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -149,7 +252,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+        {!pathname.startsWith("/admin") && <SiteFooter />}
       </div>
     </div>
   );
