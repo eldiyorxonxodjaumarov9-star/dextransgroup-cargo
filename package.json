@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/prisma-with-env.mjs generate && tsx scripts/upsert-admin.ts && next build",
+    "build": "node scripts/prisma-with-env.mjs generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:push": "node scripts/prisma-with-env.mjs db push",
