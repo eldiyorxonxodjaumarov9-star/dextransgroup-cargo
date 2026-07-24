@@ -2,9 +2,34 @@ import { config } from "dotenv";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
-// Load local defaults. Prefer already-exported env (e.g. `vercel env run`).
 config({ path: ".env" });
 config({ path: ".env.local" });
+
+function isBad(value) {
+  if (!value) return true;
+  const v = String(value).trim();
+  if (!v.startsWith("postgres://") && !v.startsWith("postgresql://")) return true;
+  return (
+    v.includes("localhost") ||
+    v.includes("127.0.0.1") ||
+    v.includes("user:pass@") ||
+    v === "[SENSITIVE]"
+  );
+}
+
+if (isBad(process.env.DATABASE_URL)) {
+  process.env.DATABASE_URL =
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL;
+}
+
+if (isBad(process.env.DIRECT_URL)) {
+  process.env.DIRECT_URL =
+    process.env.DATABASE_URL_UNPOOLED ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL;
+}
 
 if (process.env.DATABASE_URL && !process.env.DIRECT_URL) {
   process.env.DIRECT_URL = process.env.DATABASE_URL;
@@ -26,29 +51,10 @@ async function main() {
     throw new Error("DATABASE_URL is required.");
   }
 
-  if (process.env.DATABASE_URL.startsWith("file:")) {
-    console.warn(
-      "Skipping admin upsert: DATABASE_URL points to a local file database."
+  if (isBad(process.env.DATABASE_URL)) {
+    throw new Error(
+      "DATABASE_URL is still a placeholder/localhost. Set Neon DATABASE_URL (or POSTGRES_PRISMA_URL) on Vercel."
     );
-    return;
-  }
-
-  if (
-    !process.env.DATABASE_URL.startsWith("postgresql://") &&
-    !process.env.DATABASE_URL.startsWith("postgres://")
-  ) {
-    throw new Error("DATABASE_URL must be a PostgreSQL connection string.");
-  }
-
-  // Placeholder localhost URLs cannot receive production admin credentials.
-  if (
-    process.env.DATABASE_URL.includes("localhost") ||
-    process.env.DATABASE_URL.includes("127.0.0.1")
-  ) {
-    console.warn(
-      "Skipping admin upsert: DATABASE_URL points to localhost. Set a real hosted PostgreSQL URL in Vercel, then re-run npm run db:admin."
-    );
-    return;
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -59,14 +65,13 @@ async function main() {
     create: { username, passwordHash },
   });
 
-  // Remove other admin usernames so login uses the configured account only.
-  // Does not touch cargo, warehouses, operators, or any other tables.
   const removed = await prisma.adminUser.deleteMany({
     where: { id: { not: admin.id } },
   });
 
+  const count = await prisma.adminUser.count();
   console.log(
-    `Admin user upserted successfully (username set, other admin rows removed: ${removed.count}).`
+    `Admin user upserted successfully (admins=${count}, other admin rows removed: ${removed.count}).`
   );
 }
 
