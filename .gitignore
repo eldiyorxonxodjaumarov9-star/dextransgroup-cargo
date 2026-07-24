@@ -58,3 +58,6 @@ cookies.txt
 !/public/uploads/warehouses/.gitkeep
 /public/uploads/items/*
 !/public/uploads/items/.gitkeep
+
+.vercel
+.env*

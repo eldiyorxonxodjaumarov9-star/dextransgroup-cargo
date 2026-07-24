@@ -23,6 +23,9 @@ async function main() {
     );
   }
 
+  // NOTE: Full seed deletes business data. Prefer `npm run db:admin` to upsert
+  // only the AdminUser without touching cargo, warehouses, or operators.
+
   await prisma.cargoItem.deleteMany();
   await prisma.operator.deleteMany();
   await prisma.warehouse.deleteMany();
