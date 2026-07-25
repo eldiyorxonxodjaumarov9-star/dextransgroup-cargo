@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ItemCard } from "@/components/ItemCard";
 import { OperatorCard } from "@/components/OperatorCard";
-import { WarehouseDetailCard } from "@/components/WarehouseDetailCard";
+import { WarehouseRegionButtons } from "@/components/WarehouseRegionButtons";
 import { HashScroll } from "@/components/HashScroll";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { itemListInclude, sanitizeItem } from "@/lib/item-api";
@@ -122,8 +122,8 @@ export default async function HomePage() {
   ]);
 
   const items = rawItems.map(sanitizeItem);
-  const china = warehouses.filter((w) => w.region === "CHINA");
-  const tashkent = warehouses.filter((w) => w.region === "TASHKENT");
+  const chinaCount = warehouses.filter((w) => w.region === "CHINA").length;
+  const tashkentCount = warehouses.filter((w) => w.region === "TASHKENT").length;
   const cargoSections = [
     { id: "new", category: "NEW" as const },
     { id: "transit", category: "IN_TRANSIT" as const },
@@ -383,36 +383,18 @@ export default async function HomePage() {
       </section>
 
       {/* WAREHOUSES */}
-      <section id="warehouses" className="scroll-mt-24 space-y-8">
+      <section id="warehouses" className="scroll-mt-24 space-y-6">
         <div className="space-y-2">
           <h2 className="text-2xl font-bold sm:text-3xl">Omborlar</h2>
           <p className="max-w-2xl text-muted">
-            Xitoy omborlari — manzillar, xarita va Google Maps.
+            Xitoy yoki Toshkent omborlarini tanlang — xaritalar alohida sahifada
+            ochiladi.
           </p>
         </div>
-        <div className="space-y-5">
-          <h3 className="text-2xl font-bold">Xitoydagi omborlar ({china.length})</h3>
-          <div className="space-y-6">
-            {china.map((warehouse) => (
-              <WarehouseDetailCard key={warehouse.id} warehouse={warehouse} />
-            ))}
-            {!china.length && (
-              <div className="card p-6 text-muted">Hozircha Xitoy ombori yo‘q.</div>
-            )}
-          </div>
-        </div>
-        {tashkent.length > 0 && (
-          <div className="space-y-5">
-            <h3 className="text-2xl font-bold">
-              Toshkentdagi omborlar ({tashkent.length})
-            </h3>
-            <div className="space-y-6">
-              {tashkent.map((warehouse) => (
-                <WarehouseDetailCard key={warehouse.id} warehouse={warehouse} />
-              ))}
-            </div>
-          </div>
-        )}
+        <WarehouseRegionButtons
+          chinaCount={chinaCount}
+          tashkentCount={tashkentCount}
+        />
       </section>
 
       {/* OPERATORS */}
