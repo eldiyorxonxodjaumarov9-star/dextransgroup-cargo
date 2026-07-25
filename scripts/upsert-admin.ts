@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 config({ path: ".env" });
 config({ path: ".env.local" });
 
-function isBad(value) {
+function isBad(value?: string) {
   if (!value) return true;
   const v = String(value).trim();
   if (!v.startsWith("postgres://") && !v.startsWith("postgresql://")) return true;
