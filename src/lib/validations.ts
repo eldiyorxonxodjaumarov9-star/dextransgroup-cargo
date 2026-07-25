@@ -5,7 +5,18 @@ export const cargoItemSchema = z
     name: z.string().min(2, "Tovar nomi kamida 2 ta belgidan iborat bo‘lsin"),
     trackNumber: z.string().min(3, "Trek raqami majburiy"),
     entryType: z.enum(["MANUAL", "PDF"]).default("MANUAL"),
-    imageUrl: z.string().url("Rasm URL noto‘g‘ri").optional().or(z.literal("")),
+    imageUrl: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine(
+        (value) =>
+          !value ||
+          value.startsWith("https://") ||
+          value.startsWith("http://") ||
+          value.startsWith("data:image/"),
+        { message: "Rasm URL noto‘g‘ri" }
+      ),
     description: z.string().optional(),
     price: z.string().optional(),
     category: z.enum(["NEW", "IN_TRANSIT", "ARRIVED"]),

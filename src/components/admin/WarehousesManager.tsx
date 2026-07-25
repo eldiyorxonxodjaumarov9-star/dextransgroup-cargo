@@ -4,6 +4,7 @@ import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload } from "lucide-react";
 import { REGION_LABELS } from "@/lib/constants";
+import { preparePdfForUpload } from "@/lib/pdf-client";
 import { WAREHOUSE_REGIONS } from "@/lib/types";
 
 type Warehouse = {
@@ -61,6 +62,7 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
 
   function startEdit(item: Warehouse) {
     setEditingId(item.id);
@@ -105,6 +107,7 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setProgress("");
 
     try {
       if (entryType === "PDF" && !pdfFile && !existingPdfUrl) {
@@ -132,8 +135,15 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
         formData.set("workingHours", form.workingHours);
         formData.set("latitude", form.latitude);
         formData.set("longitude", form.longitude);
+      } else if (pdfFile) {
+        const prepared = await preparePdfForUpload(pdfFile, setProgress);
+        formData.set("pdf", prepared.file);
+        setProgress(
+          prepared.wasCompressed
+            ? `Siqildi: ${(prepared.originalSize / 1024 / 1024).toFixed(1)} MB → ${(prepared.compressedSize / 1024 / 1024).toFixed(1)} MB`
+            : "Yuklanmoqda…"
+        );
       } else {
-        if (pdfFile) formData.set("pdf", pdfFile);
         if (existingPdfUrl) formData.set("pdfUrl", existingPdfUrl);
         if (existingPdfName) formData.set("pdfFileName", existingPdfName);
       }
@@ -152,10 +162,11 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
       }
       resetForm();
       router.refresh();
-    } catch {
-      setError("Tarmoq xatosi");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tarmoq xatosi");
     } finally {
       setLoading(false);
+      setProgress("");
     }
   }
 
@@ -273,7 +284,9 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
                 <p className="text-sm font-bold text-[var(--brand-ink)] dark:text-foreground">
                   PDF faylni tanlang yoki shu yerga tashlang
                 </p>
-                <p className="mt-1 text-xs text-muted">Faqat .pdf · maksimal 15 MB</p>
+                <p className="mt-1 text-xs text-muted">
+                  Faqat .pdf · 80 MB gacha (katta fayl avtomatik siqiladi)
+                </p>
               </div>
               <input
                 ref={fileInputRef}
@@ -297,6 +310,11 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
                 <span className="font-medium">
                   {pdfFile?.name || existingPdfName || "Yuklangan PDF"}
                 </span>
+                {pdfFile && (
+                  <span className="text-xs text-muted">
+                    {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                )}
                 {existingPdfUrl && !pdfFile && (
                   <a
                     href={existingPdfUrl}
@@ -308,6 +326,10 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
                   </a>
                 )}
               </div>
+            )}
+
+            {progress && (
+              <p className="text-sm font-medium text-[var(--brand-teal)]">{progress}</p>
             )}
 
             <div className="field">
@@ -458,7 +480,7 @@ export function WarehousesManager({ warehouses }: { warehouses: Warehouse[] }) {
 
         <div className="flex flex-wrap gap-2 md:col-span-2">
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Saqlanmoqda..." : editingId ? "Yangilash" : "Qo‘shish"}
+            {loading ? progress || "Saqlanmoqda..." : editingId ? "Yangilash" : "Qo‘shish"}
           </button>
           {editingId && (
             <button type="button" className="btn btn-secondary" onClick={resetForm}>

@@ -1,4 +1,4 @@
-const MAX_PDF_BYTES = 15 * 1024 * 1024;
+const MAX_PDF_BYTES = Math.floor(4.5 * 1024 * 1024);
 
 export type StoredPdf = {
   data: Buffer;
@@ -13,7 +13,7 @@ export async function readPdfUpload(file: File): Promise<StoredPdf> {
     throw new Error("Bo‘sh fayl yuklab bo‘lmaydi");
   }
   if (file.size > MAX_PDF_BYTES) {
-    throw new Error("PDF hajmi 15 MB dan oshmasin");
+    throw new Error("PDF hajmi juda katta — brauzer avtomatik siqishi kerak edi");
   }
 
   return {

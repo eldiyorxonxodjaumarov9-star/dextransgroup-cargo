@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload } from "lucide-react";
 import { CATEGORY_LABELS, STATUS_LABELS } from "@/lib/constants";
+import { preparePdfForUpload } from "@/lib/pdf-client";
 import { CARGO_CATEGORIES, CARGO_STATUSES } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { CategoryBadge, StatusBadge } from "@/components/StatusBadge";
@@ -73,6 +74,7 @@ export function ItemsManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
   const [filter, setFilter] = useState("ALL");
 
   const filtered = useMemo(
@@ -123,6 +125,7 @@ export function ItemsManager({
     e.preventDefault();
     setLoading(true);
     setError("");
+    setProgress("");
 
     try {
       if (entryType === "PDF" && !pdfFile && !existingPdfUrl) {
@@ -150,9 +153,21 @@ export function ItemsManager({
         formData.set("warehouseId", form.warehouseId);
         formData.set("operatorId", form.operatorId);
       } else {
-        if (pdfFile) formData.set("pdf", pdfFile);
-        if (existingPdfUrl) formData.set("pdfUrl", existingPdfUrl);
-        if (existingPdfName) formData.set("pdfFileName", existingPdfName);
+        let imageUrl = form.imageUrl;
+        if (pdfFile) {
+          const prepared = await preparePdfForUpload(pdfFile, setProgress);
+          formData.set("pdf", prepared.file);
+          imageUrl = prepared.previewDataUrl;
+          setProgress(
+            prepared.wasCompressed
+              ? `Siqildi: ${(prepared.originalSize / 1024 / 1024).toFixed(1)} MB → ${(prepared.compressedSize / 1024 / 1024).toFixed(1)} MB`
+              : "Yuklanmoqda…"
+          );
+        } else if (existingPdfUrl) {
+          formData.set("pdfUrl", existingPdfUrl);
+          if (existingPdfName) formData.set("pdfFileName", existingPdfName);
+        }
+        if (imageUrl) formData.set("imageUrl", imageUrl);
       }
 
       const res = await fetch(editingId ? `/api/items/${editingId}` : "/api/items", {
@@ -166,10 +181,11 @@ export function ItemsManager({
       }
       resetForm();
       router.refresh();
-    } catch {
-      setError("Tarmoq xatosi");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tarmoq xatosi");
     } finally {
       setLoading(false);
+      setProgress("");
     }
   }
 
@@ -319,7 +335,9 @@ export function ItemsManager({
                 <p className="text-sm font-bold text-[var(--brand-ink)] dark:text-foreground">
                   PDF faylni tanlang yoki shu yerga tashlang
                 </p>
-                <p className="mt-1 text-xs text-muted">Faqat .pdf · maksimal 15 MB</p>
+                <p className="mt-1 text-xs text-muted">
+                  Faqat .pdf · 80 MB gacha (katta fayl avtomatik siqiladi)
+                </p>
               </div>
               <input
                 ref={fileInputRef}
@@ -343,6 +361,11 @@ export function ItemsManager({
                 <span className="font-medium">
                   {pdfFile?.name || existingPdfName || "Yuklangan PDF"}
                 </span>
+                {pdfFile && (
+                  <span className="text-xs text-muted">
+                    {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                )}
                 {existingPdfUrl && !pdfFile && (
                   <a
                     href={existingPdfUrl}
@@ -354,6 +377,21 @@ export function ItemsManager({
                   </a>
                 )}
               </div>
+            )}
+
+            {form.imageUrl && entryType === "PDF" && !pdfFile && (
+              <div className="overflow-hidden rounded-xl border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={form.imageUrl}
+                  alt="PDF preview"
+                  className="max-h-40 w-full object-cover"
+                />
+              </div>
+            )}
+
+            {progress && (
+              <p className="text-sm font-medium text-[var(--brand-teal)]">{progress}</p>
             )}
 
             <div className="field">
@@ -456,7 +494,7 @@ export function ItemsManager({
 
         <div className="flex flex-wrap gap-2 md:col-span-2">
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Saqlanmoqda..." : editingId ? "Yangilash" : "Qo‘shish"}
+            {loading ? progress || "Saqlanmoqda..." : editingId ? "Yangilash" : "Qo‘shish"}
           </button>
           {editingId && (
             <button type="button" className="btn btn-secondary" onClick={resetForm}>

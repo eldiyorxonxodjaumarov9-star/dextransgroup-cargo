@@ -40,7 +40,8 @@ export function itemPayload(data: {
     status: data.status,
     date: new Date(data.date),
     notes: emptyToNull(data.notes),
-    imageUrl: isPdf ? null : emptyToNull(data.imageUrl),
+    // PDF uchun ham preview (birinchi sahifa) saqlanadi — bosh sahifada ko‘rinadi
+    imageUrl: emptyToNull(data.imageUrl),
     description: isPdf ? null : emptyToNull(data.description),
     price: isPdf ? null : emptyToNull(data.price),
     etaDate: isPdf || !data.etaDate ? null : new Date(data.etaDate),

@@ -32,6 +32,24 @@ export function ItemCard({ item }: ItemCardProps) {
   if (isPdf) {
     return (
       <article className="card min-w-0 overflow-hidden">
+        <div className="relative aspect-[16/10] bg-background">
+          {item.imageUrl ? (
+            <Image
+              src={item.imageUrl}
+              alt={item.name}
+              fill
+              className="object-cover"
+              sizes="(max-width:768px) 100vw, 33vw"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted">
+              <FileText size={36} className="text-[var(--brand-teal)]" />
+              <span className="text-xs">PDF hujjat</span>
+            </div>
+          )}
+        </div>
+
         <div className="space-y-3 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
@@ -56,14 +74,6 @@ export function ItemCard({ item }: ItemCardProps) {
           {item.notes && (
             <p className="break-words text-sm text-muted">{item.notes}</p>
           )}
-
-          <div className="overflow-hidden rounded-2xl border border-border bg-[#f8fafc] dark:bg-background">
-            <iframe
-              title={`${item.name} PDF`}
-              src={`${item.pdfUrl!}#view=FitH`}
-              className="h-[min(55dvh,22rem)] w-full sm:h-80"
-            />
-          </div>
 
           <a
             href={item.pdfUrl!}

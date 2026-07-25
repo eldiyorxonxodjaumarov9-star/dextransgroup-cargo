@@ -55,6 +55,9 @@ export async function PUT(request: Request, { params }: Params) {
       where: { id },
       data: {
         ...base,
+        imageUrl:
+          emptyToNull(parsed.data.imageUrl) ??
+          (isPdf ? existing.imageUrl : null),
         pdfData: isPdf ? parsedRequest.pdfData ?? existing.pdfData : null,
         pdfUrl: isPdf ? itemPdfPath(id) : null,
         pdfFileName: isPdf
