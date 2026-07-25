@@ -11,6 +11,7 @@
     "db:migrate": "node scripts/prisma-with-env.mjs migrate deploy",
     "db:seed": "prisma db seed",
     "db:admin": "tsx scripts/upsert-admin.ts",
+    "db:catalog": "tsx scripts/seed-warehouses-operators.ts",
     "db:reset": "node scripts/prisma-with-env.mjs db push --force-reset && prisma db seed",
     "prisma:generate": "node scripts/prisma-generate-safe.mjs",
     "postinstall": "node scripts/prisma-with-env.mjs generate"

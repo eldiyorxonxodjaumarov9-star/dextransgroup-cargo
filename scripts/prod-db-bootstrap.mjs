@@ -134,4 +134,18 @@ if ((admin.status ?? 1) !== 0) {
   process.exit(admin.status ?? 1);
 }
 
+console.log("[prod-db] Seeding warehouses + operators (non-destructive)...");
+const catalog = spawnSync("npx", ["tsx", "scripts/seed-warehouses-operators.ts"], {
+  encoding: "utf8",
+  shell: true,
+  env: process.env,
+  cwd: process.cwd(),
+});
+process.stdout.write(catalog.stdout || "");
+process.stderr.write(catalog.stderr || "");
+if ((catalog.status ?? 1) !== 0) {
+  console.error("[prod-db] Catalog upsert failed.");
+  process.exit(catalog.status ?? 1);
+}
+
 process.exit(0);
