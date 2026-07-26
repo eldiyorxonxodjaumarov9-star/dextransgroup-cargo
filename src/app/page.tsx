@@ -11,8 +11,11 @@ import {
 import { ItemCard } from "@/components/ItemCard";
 import { OperatorCard } from "@/components/OperatorCard";
 import { WarehouseRegionButtons } from "@/components/WarehouseRegionButtons";
+import { GuestServicesBanner } from "@/components/GuestServicesBanner";
 import { HashScroll } from "@/components/HashScroll";
 import { CATEGORY_LABELS } from "@/lib/constants";
+import { DEFAULT_GUEST_BANNER } from "@/lib/guest-services";
+import { sanitizeGuestMedia } from "@/lib/guest-media-api";
 import { itemListInclude, sanitizeItem } from "@/lib/item-api";
 import { prisma } from "@/lib/prisma";
 import { safeQuery } from "@/lib/safe-query";
@@ -87,39 +90,53 @@ const values = [
 ];
 
 export default async function HomePage() {
-  const [warehouseCount, rawItems, warehouses, operators] = await Promise.all([
-    safeQuery(
-      "Home.warehouseCount",
-      () => prisma.warehouse.count({ where: { region: "CHINA" } }),
-      0
-    ),
-    safeQuery(
-      "Home.cargo",
-      () =>
-        prisma.cargoItem.findMany({
-          include: itemListInclude,
-          orderBy: { date: "desc" },
-        }),
-      []
-    ),
-    safeQuery(
-      "Home.warehouses",
-      () =>
-        prisma.warehouse.findMany({
-          select: warehouseListSelect,
-          orderBy: [{ region: "asc" }, { name: "asc" }],
-        }),
-      []
-    ),
-    safeQuery(
-      "Home.operators",
-      () =>
-        prisma.operator.findMany({
-          orderBy: [{ isActive: "desc" }, { name: "asc" }],
-        }),
-      []
-    ),
-  ]);
+  const [warehouseCount, rawItems, warehouses, operators, guestBannerUrl] =
+    await Promise.all([
+      safeQuery(
+        "Home.warehouseCount",
+        () => prisma.warehouse.count({ where: { region: "CHINA" } }),
+        0
+      ),
+      safeQuery(
+        "Home.cargo",
+        () =>
+          prisma.cargoItem.findMany({
+            include: itemListInclude,
+            orderBy: { date: "desc" },
+          }),
+        []
+      ),
+      safeQuery(
+        "Home.warehouses",
+        () =>
+          prisma.warehouse.findMany({
+            select: warehouseListSelect,
+            orderBy: [{ region: "asc" }, { name: "asc" }],
+          }),
+        []
+      ),
+      safeQuery(
+        "Home.operators",
+        () =>
+          prisma.operator.findMany({
+            orderBy: [{ isActive: "desc" }, { name: "asc" }],
+          }),
+        []
+      ),
+      safeQuery(
+        "Home.guestBanner",
+        async () => {
+          const banner = await prisma.guestServiceMedia.findFirst({
+            where: { kind: "BANNER", isActive: true },
+            orderBy: { updatedAt: "desc" },
+          });
+          if (!banner) return DEFAULT_GUEST_BANNER;
+          const clean = sanitizeGuestMedia(banner);
+          return clean.mediaUrl || DEFAULT_GUEST_BANNER;
+        },
+        DEFAULT_GUEST_BANNER
+      ),
+    ]);
 
   const items = rawItems.map(sanitizeItem);
   const chinaCount = warehouses.filter((w) => w.region === "CHINA").length;
@@ -349,6 +366,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <GuestServicesBanner bannerSrc={guestBannerUrl} />
 
       {/* CARGO */}
       <section id="cargo" className="scroll-mt-24 space-y-8">

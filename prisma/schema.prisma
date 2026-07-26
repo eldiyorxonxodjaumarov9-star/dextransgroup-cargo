@@ -84,3 +84,18 @@ model AdminUser {
   passwordHash String
   createdAt    DateTime @default(now())
 }
+
+/// Mehmon xizmatlari banner / galereya / video (admin yuklaydi)
+model GuestServiceMedia {
+  id        String   @id @default(cuid())
+  kind      String   // BANNER | IMAGE | VIDEO
+  title     String?
+  sortOrder Int      @default(0)
+  mimeType  String?
+  fileName  String?
+  data      Bytes?
+  mediaUrl  String?  // /api/guest-services/{id}/file yoki tashqi URL
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

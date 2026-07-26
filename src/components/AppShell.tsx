@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 const publicNav = [
   { id: "home", href: "/#home", label: "Bosh sahifa" },
+  { id: "guest-services", href: "/guest-services", label: "Mehmonlar" },
   { id: "cargo", href: "/#cargo", label: "Cargo" },
   { id: "warehouses", href: "/#warehouses", label: "Omborlar" },
   { id: "operators", href: "/#operators", label: "Operatorlar" },
@@ -80,8 +81,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => observer.disconnect();
   }, [isAdmin, pathname]);
 
-  function scrollToSection(id: string) {
+  function goNav(item: (typeof publicNav)[number]) {
     setMenuOpen(false);
+    if (item.href.startsWith("/guest-services") || !item.href.includes("#")) {
+      window.location.href = item.href;
+      return;
+    }
+    const id = item.id;
     const node = document.getElementById(id);
     if (node) {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -89,7 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       window.history.replaceState(null, "", `/#${id}`);
       return;
     }
-    window.location.href = `/#${id}`;
+    window.location.href = item.href;
   }
 
   if (isAdmin) {
@@ -135,7 +141,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             className="min-w-0 shrink"
-            onClick={() => scrollToSection("home")}
+            onClick={() => goNav({ id: "home", href: "/#home", label: "Bosh sahifa" })}
             aria-label="Bosh sahifa"
           >
             <BrandLogo
@@ -150,10 +156,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => scrollToSection(item.id)}
+                onClick={() => goNav(item)}
                 className={cn(
                   "rounded-xl px-3 py-2 text-sm font-semibold transition",
-                  activeSection === item.id
+                  (pathname.startsWith("/guest-services")
+                    ? item.id === "guest-services"
+                    : activeSection === item.id)
                     ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
                     : "text-muted hover:bg-background hover:text-foreground"
                 )}
@@ -220,10 +228,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => goNav(item)}
                   className={cn(
                     "min-h-11 rounded-xl px-3 py-3 text-left text-sm font-semibold",
-                    activeSection === item.id
+                    (pathname.startsWith("/guest-services")
+                      ? item.id === "guest-services"
+                      : activeSection === item.id)
                       ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
                       : "text-foreground hover:bg-background"
                   )}

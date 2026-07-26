@@ -9,6 +9,7 @@ const links = [
   { href: "/admin/items", label: "Tovarlar" },
   { href: "/admin/warehouses", label: "Omborlar" },
   { href: "/admin/operators", label: "Operatorlar" },
+  { href: "/admin/guest-services", label: "Mehmon xizmati" },
   { href: "/admin/reports", label: "Hisobot" },
 ];
 
