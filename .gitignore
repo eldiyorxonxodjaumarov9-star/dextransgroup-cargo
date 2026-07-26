@@ -50,8 +50,9 @@ prisma/dev.db-journal
 *.db
 *.db-journal
 
-# local cookies / secrets
-cookies.txt
+# local source photo dumps
+/rasimlar/
+
 
 # uploaded files (legacy local disks; PDFs now live in DB)
 /public/uploads/warehouses/*

@@ -59,16 +59,16 @@ export const GUEST_SERVICE_COPY: Record<
 /** Repo bilan keladigan default media (admin yuklamasa ham ko‘rinadi) */
 export const DEFAULT_GUEST_IMAGES = [
   {
-    id: "default-airport",
+    id: "default-meeting",
     kind: "IMAGE" as const,
-    title: "Aeroport kutib olish",
-    src: "/guest-services/airport.jpg",
+    title: "Biznes uchrashuv",
+    src: "/guest-services/meeting.jpg",
   },
   {
-    id: "default-translator",
+    id: "default-partners",
     kind: "IMAGE" as const,
-    title: "Tarjimonlik xizmati",
-    src: "/guest-services/translator.jpg",
+    title: "Mehmonlar bilan",
+    src: "/guest-services/partners.jpg",
   },
   {
     id: "default-exhibition",
@@ -77,11 +77,29 @@ export const DEFAULT_GUEST_IMAGES = [
     src: "/guest-services/exhibition.jpg",
   },
   {
-    id: "default-tour",
+    id: "default-negotiation",
     kind: "IMAGE" as const,
-    title: "Ekskursiya",
-    src: "/guest-services/tour.jpg",
+    title: "Bitimlar va muzokara",
+    src: "/guest-services/negotiation.jpg",
+  },
+  {
+    id: "default-installation",
+    kind: "IMAGE" as const,
+    title: "Jihoz o‘rnatish",
+    src: "/guest-services/installation.jpg",
+  },
+  {
+    id: "default-site",
+    kind: "IMAGE" as const,
+    title: "Obyektga tashrif",
+    src: "/guest-services/site-visit.jpg",
+  },
+  {
+    id: "default-hsk",
+    kind: "IMAGE" as const,
+    title: "HSK 6 sertifikat",
+    src: "/guest-services/hsk.jpg",
   },
 ];
 
-export const DEFAULT_GUEST_BANNER = "/guest-services/airport.jpg";
+export const DEFAULT_GUEST_BANNER = "/guest-services/partners.jpg";
