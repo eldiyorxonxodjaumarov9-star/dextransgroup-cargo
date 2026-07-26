@@ -102,4 +102,4 @@ export const DEFAULT_GUEST_IMAGES = [
   },
 ];
 
-export const DEFAULT_GUEST_BANNER = "/guest-services/partners.jpg";
+export const DEFAULT_GUEST_BANNER = "/guest-services/banner.jpg";
