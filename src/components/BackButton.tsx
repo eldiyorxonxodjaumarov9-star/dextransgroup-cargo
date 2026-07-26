@@ -2,15 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export function BackButton({
   href = "/#warehouses",
-  label = "Orqaga",
+  label,
 }: {
   href?: string;
   label?: string;
 }) {
   const router = useRouter();
+  const { t } = useLocale();
+  const text = label || t.warehouse.back;
 
   return (
     <button
@@ -23,10 +26,10 @@ export function BackButton({
         router.push(href);
       }}
       className="btn btn-secondary !min-h-11"
-      aria-label={label}
+      aria-label={text}
     >
       <ArrowLeft size={16} />
-      {label}
+      {text}
     </button>
   );
 }

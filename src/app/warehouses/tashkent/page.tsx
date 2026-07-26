@@ -1,5 +1,7 @@
 import { BackButton } from "@/components/BackButton";
 import { WarehouseDetailCard } from "@/components/WarehouseDetailCard";
+import { WarehouseEmpty } from "@/components/WarehouseEmpty";
+import { WarehouseRegionHeader } from "@/components/WarehouseRegionHeader";
 import { prisma } from "@/lib/prisma";
 import { safeQuery } from "@/lib/safe-query";
 import { warehouseListSelect } from "@/lib/warehouse-api";
@@ -7,8 +9,8 @@ import { warehouseListSelect } from "@/lib/warehouse-api";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Toshkent omborlari | DEXTRANS GROUP CARGO",
-  description: "Toshkent omborlari manzillari, xarita va Google Maps",
+  title: "Tashkent warehouses | DEXTRANS GROUP CARGO",
+  description: "Tashkent warehouse addresses, map and Google Maps",
 };
 
 export default async function TashkentWarehousesPage() {
@@ -26,17 +28,7 @@ export default async function TashkentWarehousesPage() {
   return (
     <div className="space-y-6 pb-6">
       <BackButton href="/#warehouses" />
-      <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-teal)]">
-          🇺🇿 Toshkent
-        </p>
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-          Toshkent omborlari
-        </h1>
-        <p className="max-w-2xl text-sm text-muted">
-          {warehouses.length} ta ombor — manzil, telefon va interaktiv xarita.
-        </p>
-      </div>
+      <WarehouseRegionHeader region="TASHKENT" count={warehouses.length} />
 
       {warehouses.length ? (
         <div className="space-y-6">
@@ -45,9 +37,7 @@ export default async function TashkentWarehousesPage() {
           ))}
         </div>
       ) : (
-        <div className="card p-6 text-muted">
-          Hozircha Toshkent ombori yo‘q. Admin panel orqali qo‘shish mumkin.
-        </div>
+        <WarehouseEmpty region="TASHKENT" />
       )}
     </div>
   );

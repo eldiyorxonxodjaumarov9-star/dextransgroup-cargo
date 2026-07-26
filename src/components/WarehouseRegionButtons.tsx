@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { MapPinned, Warehouse } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export function WarehouseRegionButtons({
   chinaCount,
@@ -8,6 +11,8 @@ export function WarehouseRegionButtons({
   chinaCount: number;
   tashkentCount: number;
 }) {
+  const { t, format } = useLocale();
+
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <Link
@@ -24,10 +29,10 @@ export function WarehouseRegionButtons({
         </div>
         <div>
           <h3 className="text-xl font-bold text-[var(--brand-ink)] dark:text-foreground">
-            Xitoy omborlari
+            {t.warehouse.chinaTitle}
           </h3>
           <p className="mt-1 text-sm text-muted">
-            {chinaCount} ta manzil · xarita va Google Maps
+            {format(t.warehouse.chinaHint, { n: chinaCount })}
           </p>
         </div>
       </Link>
@@ -46,10 +51,10 @@ export function WarehouseRegionButtons({
         </div>
         <div>
           <h3 className="text-xl font-bold text-[var(--brand-ink)] dark:text-foreground">
-            Toshkent omborlari
+            {t.warehouse.tashkentTitle}
           </h3>
           <p className="mt-1 text-sm text-muted">
-            {tashkentCount} ta manzil · xarita va Google Maps
+            {format(t.warehouse.tashkentHint, { n: tashkentCount })}
           </p>
         </div>
       </Link>

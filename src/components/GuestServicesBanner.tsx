@@ -3,21 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Plane, Languages, Landmark, MapPinned } from "lucide-react";
-import { DEFAULT_GUEST_BANNER, GUEST_SERVICE_COPY } from "@/lib/guest-services";
+import { useLocale } from "@/components/LocaleProvider";
+import { DEFAULT_GUEST_BANNER } from "@/lib/guest-services";
 
-const highlights = [
-  { icon: Plane, text: "Aeroport kutib olish" },
-  { icon: Languages, text: "Tarjimonlik" },
-  { icon: Landmark, text: "Ko‘rgazmalar" },
-  { icon: MapPinned, text: "Ekskursiyalar" },
-];
+const highlightIcons = [Plane, Languages, Landmark, MapPinned] as const;
 
 export function GuestServicesBanner({
   bannerSrc = DEFAULT_GUEST_BANNER,
 }: {
   bannerSrc?: string;
 }) {
-  const uz = GUEST_SERVICE_COPY.uz;
+  const { t } = useLocale();
+  const highlights = t.guest.highlights.map((text, index) => ({
+    icon: highlightIcons[index],
+    text,
+  }));
 
   return (
     <section id="guest-services" className="scroll-mt-24">
@@ -28,7 +28,7 @@ export function GuestServicesBanner({
         <div className="absolute inset-0">
           <Image
             src={bannerSrc}
-            alt={uz.title}
+            alt={t.guest.title}
             fill
             className="object-cover transition duration-700 group-hover:scale-[1.03]"
             sizes="100vw"
@@ -44,11 +44,10 @@ export function GuestServicesBanner({
               Guest services · 宾客服务
             </p>
             <h2 className="max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
-              {uz.title}
+              {t.guest.title}
             </h2>
             <p className="max-w-xl text-sm text-white/80 sm:text-base">
-              {uz.subtitle}. Aeroport, tarjimon, ko‘rgazma va ekskursiyalar — bitta
-              joyda.
+              {t.guest.subtitle}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               {highlights.map((item) => {
@@ -68,7 +67,7 @@ export function GuestServicesBanner({
 
           <div className="flex lg:justify-end">
             <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg transition group-hover:translate-x-1">
-              Batafsil ko‘rish
+              {t.guest.more}
               <ArrowRight size={16} />
             </span>
           </div>

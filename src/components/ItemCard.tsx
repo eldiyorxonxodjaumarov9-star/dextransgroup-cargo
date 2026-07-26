@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import { ExternalLink, FileText, MapPin, Package } from "lucide-react";
 import { StatusBadge, CategoryBadge } from "./StatusBadge";
+import { useLocale } from "@/components/LocaleProvider";
 import { formatDate } from "@/lib/utils";
 
 type ItemCardProps = {
@@ -27,6 +30,7 @@ type ItemCardProps = {
 };
 
 export function ItemCard({ item }: ItemCardProps) {
+  const { t } = useLocale();
   const isPdf = item.entryType === "PDF" && Boolean(item.pdfUrl);
 
   if (isPdf) {
@@ -45,7 +49,7 @@ export function ItemCard({ item }: ItemCardProps) {
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-muted">
               <FileText size={36} className="text-[var(--brand-teal)]" />
-              <span className="text-xs">PDF hujjat</span>
+              <span className="text-xs">{t.item.pdfDoc}</span>
             </div>
           )}
         </div>
@@ -64,11 +68,11 @@ export function ItemCard({ item }: ItemCardProps) {
 
           <p className="flex min-w-0 items-start gap-2 break-words text-sm text-muted">
             <FileText size={15} className="mt-0.5 shrink-0 text-[var(--brand-teal)]" />
-            <span>{item.pdfFileName || "PDF hujjat"}</span>
+            <span>{item.pdfFileName || t.item.pdfDoc}</span>
           </p>
 
           <p className="text-sm">
-            <span className="text-muted">Sana:</span> {formatDate(item.date)}
+            <span className="text-muted">{t.item.date}</span> {formatDate(item.date)}
           </p>
 
           {item.notes && (
@@ -81,7 +85,7 @@ export function ItemCard({ item }: ItemCardProps) {
             rel="noreferrer"
             className="btn btn-primary w-full text-sm"
           >
-            PDF ni ochish <ExternalLink size={14} />
+            {t.item.openPdf} <ExternalLink size={14} />
           </a>
         </div>
       </article>
@@ -126,37 +130,36 @@ export function ItemCard({ item }: ItemCardProps) {
         <div className="grid gap-1 break-words text-sm">
           {item.price && (
             <p>
-              <span className="text-muted">Narx:</span> {item.price}
+              <span className="text-muted">{t.item.price}</span> {item.price}
             </p>
           )}
           <p>
-            <span className="text-muted">Sana:</span> {formatDate(item.date)}
+            <span className="text-muted">{t.item.date}</span> {formatDate(item.date)}
           </p>
           {item.etaDate && (
             <p>
-              <span className="text-muted">Taxminiy yetib kelish:</span>{" "}
-              {formatDate(item.etaDate)}
+              <span className="text-muted">{t.item.eta}</span> {formatDate(item.etaDate)}
             </p>
           )}
           <p>
-            <span className="text-muted">Ombor:</span>{" "}
+            <span className="text-muted">{t.item.warehouse}</span>{" "}
             {item.warehouse?.name || "—"}
           </p>
           <p>
-            <span className="text-muted">Operator:</span>{" "}
+            <span className="text-muted">{t.item.operator}</span>{" "}
             {item.operator
               ? `${item.operator.name} (${item.operator.phone})`
               : "—"}
           </p>
           {item.chinaAddress && (
             <p className="break-anywhere">
-              <span className="text-muted">Xitoy manzili:</span>{" "}
+              <span className="text-muted">{t.item.chinaAddress}</span>{" "}
               {item.chinaAddress}
             </p>
           )}
           {item.notes && (
             <p>
-              <span className="text-muted">Izoh:</span> {item.notes}
+              <span className="text-muted">{t.item.notes}</span> {item.notes}
             </p>
           )}
         </div>
@@ -169,7 +172,7 @@ export function ItemCard({ item }: ItemCardProps) {
               rel="noreferrer"
               className="btn btn-primary w-full text-sm sm:w-auto"
             >
-              Telegram <ExternalLink size={14} />
+              {t.item.telegram} <ExternalLink size={14} />
             </a>
           )}
           {item.locationUrl && (
@@ -179,7 +182,7 @@ export function ItemCard({ item }: ItemCardProps) {
               rel="noreferrer"
               className="btn btn-secondary w-full text-sm sm:w-auto"
             >
-              <MapPin size={14} /> Lokatsiya
+              <MapPin size={14} /> {t.item.location}
             </a>
           )}
         </div>

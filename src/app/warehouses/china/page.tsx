@@ -1,5 +1,7 @@
 import { BackButton } from "@/components/BackButton";
 import { WarehouseDetailCard } from "@/components/WarehouseDetailCard";
+import { WarehouseEmpty } from "@/components/WarehouseEmpty";
+import { WarehouseRegionHeader } from "@/components/WarehouseRegionHeader";
 import { prisma } from "@/lib/prisma";
 import { safeQuery } from "@/lib/safe-query";
 import { warehouseListSelect } from "@/lib/warehouse-api";
@@ -7,8 +9,8 @@ import { warehouseListSelect } from "@/lib/warehouse-api";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Xitoy omborlari | DEXTRANS GROUP CARGO",
-  description: "Xitoy omborlari manzillari, xarita va Google Maps",
+  title: "China warehouses | DEXTRANS GROUP CARGO",
+  description: "China warehouse addresses, map and Google Maps",
 };
 
 export default async function ChinaWarehousesPage() {
@@ -26,17 +28,7 @@ export default async function ChinaWarehousesPage() {
   return (
     <div className="space-y-6 pb-6">
       <BackButton href="/#warehouses" />
-      <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-teal)]">
-          🇨🇳 Xitoy
-        </p>
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-          Xitoy omborlari
-        </h1>
-        <p className="max-w-2xl text-sm text-muted">
-          {warehouses.length} ta ombor — manzil, telefon va interaktiv xarita.
-        </p>
-      </div>
+      <WarehouseRegionHeader region="CHINA" count={warehouses.length} />
 
       {warehouses.length ? (
         <div className="space-y-6">
@@ -45,7 +37,7 @@ export default async function ChinaWarehousesPage() {
           ))}
         </div>
       ) : (
-        <div className="card p-6 text-muted">Hozircha Xitoy ombori yo‘q.</div>
+        <WarehouseEmpty region="CHINA" />
       )}
     </div>
   );

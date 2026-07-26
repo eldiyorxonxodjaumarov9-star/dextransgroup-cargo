@@ -2,34 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Menu,
-  Moon,
-  Sun,
-  X,
-} from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLocale } from "@/components/LocaleProvider";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
-
-const publicNav = [
-  { id: "home", href: "/#home", label: "Bosh sahifa" },
-  { id: "guest-services", href: "/guest-services", label: "Mehmonlar" },
-  { id: "cargo", href: "/#cargo", label: "Cargo" },
-  { id: "warehouses", href: "/#warehouses", label: "Omborlar" },
-  { id: "operators", href: "/#operators", label: "Operatorlar" },
-];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const { theme, setTheme } = useTheme();
+  const { t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+
+  const publicNav = useMemo(
+    () => [
+      { id: "home", href: "/#home", label: t.nav.home },
+      { id: "guest-services", href: "/guest-services", label: t.nav.guests },
+      { id: "cargo", href: "/#cargo", label: t.nav.cargo },
+      { id: "warehouses", href: "/#warehouses", label: t.nav.warehouses },
+      { id: "operators", href: "/#operators", label: t.nav.operators },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount gate
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
-  }, [isAdmin, pathname]);
+  }, [isAdmin, pathname, publicNav]);
 
   function goNav(item: (typeof publicNav)[number]) {
     setMenuOpen(false);
@@ -111,17 +111,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               />
             </Link>
             <div className="flex shrink-0 items-center gap-2">
+              <LanguageSwitcher compact />
               <Link
                 href="/#home"
                 className="btn btn-secondary !min-h-10 !px-3 !py-2 text-xs"
               >
-                Saytga qaytish
+                {t.nav.backToSite}
               </Link>
               <button
                 type="button"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                aria-label="Mavzu"
+                aria-label={t.nav.theme}
               >
                 {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
               </button>
@@ -141,8 +142,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             className="min-w-0 shrink"
-            onClick={() => goNav({ id: "home", href: "/#home", label: "Bosh sahifa" })}
-            aria-label="Bosh sahifa"
+            onClick={() => goNav(publicNav[0])}
+            aria-label={t.nav.home}
           >
             <BrandLogo
               variant="nav"
@@ -151,7 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             />
           </button>
 
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Asosiy menyu">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label={t.nav.mainMenu}>
             {publicNav.map((item) => (
               <button
                 key={item.id}
@@ -173,7 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="/admin"
               className="rounded-xl px-3 py-2 text-sm font-semibold text-muted transition hover:bg-background hover:text-foreground"
             >
-              Admin
+              {t.nav.admin}
             </Link>
           </nav>
 
@@ -182,19 +183,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               type="button"
               className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              aria-label="Mavzu"
+              aria-label={t.nav.theme}
             >
               {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
             </button>
-            <div className="hidden items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-semibold sm:flex">
-              UZ
-              <ChevronDown size={14} className="text-muted" />
-            </div>
+            <LanguageSwitcher className="hidden sm:block" />
             <button
               type="button"
               className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border lg:hidden"
               onClick={() => setMenuOpen((open) => !open)}
-              aria-label={menuOpen ? "Menyuni yopish" : "Menyuni ochish"}
+              aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
               aria-expanded={menuOpen}
             >
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -208,22 +206,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             className="absolute inset-0 bg-black/45"
-            aria-label="Menyuni yopish"
+            aria-label={t.nav.closeMenu}
             onClick={() => setMenuOpen(false)}
           />
           <div className="absolute inset-y-0 right-0 flex w-[min(320px,88vw)] flex-col border-l border-border bg-card shadow-2xl safe-bottom">
             <div className="flex items-center justify-between border-b border-border px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="text-sm font-bold">Menyu</p>
-              <button
-                type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
-                onClick={() => setMenuOpen(false)}
-                aria-label="Yopish"
-              >
-                <X size={18} />
-              </button>
+              <p className="text-sm font-bold">{t.nav.menu}</p>
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher compact />
+                <button
+                  type="button"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label={t.nav.close}
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
-            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Mobil menyu">
+            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label={t.nav.mobileMenu}>
               {publicNav.map((item) => (
                 <button
                   key={item.id}
@@ -246,7 +247,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setMenuOpen(false)}
                 className="min-h-11 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-background"
               >
-                Admin
+                {t.nav.admin}
               </Link>
             </nav>
           </div>

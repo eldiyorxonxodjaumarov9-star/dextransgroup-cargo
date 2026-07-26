@@ -1,4 +1,7 @@
+"use client";
+
 import { Phone, Send } from "lucide-react";
+import { useLocale } from "@/components/LocaleProvider";
 
 type OperatorCardProps = {
   operator: {
@@ -9,6 +12,7 @@ type OperatorCardProps = {
 };
 
 export function OperatorCard({ operator }: OperatorCardProps) {
+  const { t } = useLocale();
   const phoneHref = `tel:${operator.phone.replace(/[^\d+]/g, "")}`;
   const telegramHref = operator.telegram
     ? operator.telegram.startsWith("http")
@@ -22,7 +26,9 @@ export function OperatorCard({ operator }: OperatorCardProps) {
         <h3 className="break-words text-lg font-bold text-[var(--brand-ink)] dark:text-foreground">
           {operator.name}
         </h3>
-        <p className="text-sm text-muted">Operator</p>
+        <p className="text-sm text-muted">
+          {t.item.operator.replace(":", "").replace("：", "").trim()}
+        </p>
       </div>
 
       <div className="flex flex-col gap-3">

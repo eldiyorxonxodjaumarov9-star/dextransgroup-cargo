@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -41,7 +42,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-[100dvh] antialiased`}
       >
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          <LocaleProvider>
+            <AppShell>{children}</AppShell>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>
