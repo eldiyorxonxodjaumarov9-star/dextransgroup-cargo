@@ -116,6 +116,15 @@ export type Dictionary = {
     video: string;
     videoSub: string;
     imageFallback: string;
+    galleryCaptions: {
+      meeting: string;
+      partners: string;
+      exhibition: string;
+      negotiation: string;
+      installation: string;
+      site: string;
+      hsk: string;
+    };
   };
   warehouse: {
     chinaTitle: string;
@@ -256,6 +265,15 @@ const uz: Dictionary = {
     video: "Video",
     videoSub: "Mehmon xizmatlari haqida",
     imageFallback: "Rasm",
+    galleryCaptions: {
+      meeting: "Biznes uchrashuv",
+      partners: "Mehmonlar bilan",
+      exhibition: "Ko‘rgazma",
+      negotiation: "Bitimlar va muzokara",
+      installation: "Jihoz o‘rnatish",
+      site: "Obyektga tashrif",
+      hsk: "HSK 6 sertifikat",
+    },
   },
   warehouse: {
     chinaTitle: "Xitoy omborlari",
@@ -392,6 +410,15 @@ const ru: Dictionary = {
     video: "Видео",
     videoSub: "О гостевых услугах",
     imageFallback: "Фото",
+    galleryCaptions: {
+      meeting: "Деловая встреча",
+      partners: "С гостями",
+      exhibition: "Выставка",
+      negotiation: "Сделки и переговоры",
+      installation: "Установка оборудования",
+      site: "Визит на объект",
+      hsk: "Сертификат HSK 6",
+    },
   },
   warehouse: {
     chinaTitle: "Склады Китая",
@@ -528,6 +555,15 @@ const en: Dictionary = {
     video: "Video",
     videoSub: "About guest services",
     imageFallback: "Image",
+    galleryCaptions: {
+      meeting: "Business meeting",
+      partners: "With guests",
+      exhibition: "Exhibition",
+      negotiation: "Deals and negotiations",
+      installation: "Equipment installation",
+      site: "Site visit",
+      hsk: "HSK 6 certificate",
+    },
   },
   warehouse: {
     chinaTitle: "China warehouses",
@@ -662,6 +698,15 @@ const zh: Dictionary = {
     video: "视频",
     videoSub: "关于宾客服务",
     imageFallback: "图片",
+    galleryCaptions: {
+      meeting: "商务会谈",
+      partners: "与客人同行",
+      exhibition: "展览会",
+      negotiation: "洽谈与签约",
+      installation: "设备安装",
+      site: "实地考察",
+      hsk: "HSK 6 证书",
+    },
   },
   warehouse: {
     chinaTitle: "中国仓库",
@@ -798,6 +843,15 @@ const kk: Dictionary = {
     video: "Бейне",
     videoSub: "Қонақ қызметтері туралы",
     imageFallback: "Сурет",
+    galleryCaptions: {
+      meeting: "Іскерлік кездесу",
+      partners: "Қонақтармен",
+      exhibition: "Көрме",
+      negotiation: "Келісім және келіссөз",
+      installation: "Жабдық орнату",
+      site: "Нысанға бару",
+      hsk: "HSK 6 сертификаты",
+    },
   },
   warehouse: {
     chinaTitle: "Қытай қоймалары",

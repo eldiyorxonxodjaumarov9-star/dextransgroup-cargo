@@ -44,6 +44,7 @@ export function GuestServicesPageContent({
     const dbImages = active.filter((m) => m.kind === "IMAGE");
     const dbVideos = active.filter((m) => m.kind === "VIDEO");
     const dbBanner = active.find((m) => m.kind === "BANNER");
+    const captions = t.guest.galleryCaptions;
 
     return {
       banner: dbBanner?.mediaUrl || DEFAULT_GUEST_IMAGES[0].src,
@@ -54,10 +55,14 @@ export function GuestServicesPageContent({
               title: m.title || t.guest.imageFallback,
               src: m.mediaUrl!,
             }))
-          : DEFAULT_GUEST_IMAGES,
+          : DEFAULT_GUEST_IMAGES.map((img) => ({
+              id: img.id,
+              title: captions[img.captionKey],
+              src: img.src,
+            })),
       videos: dbVideos,
     };
-  }, [media, t.guest.imageFallback]);
+  }, [media, t.guest.galleryCaptions, t.guest.imageFallback]);
 
   return (
     <div className="space-y-8">
