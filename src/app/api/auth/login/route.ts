@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createSessionToken,
-  loginAdmin,
-} from "@/lib/auth";
-import { SESSION_COOKIE } from "@/lib/constants";
+import { attachAdminSessionCookie, loginAdmin } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -30,15 +26,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = createSessionToken(user.id, user.username);
     const response = NextResponse.json({ ok: true, username: user.username });
-    response.cookies.set(SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    attachAdminSessionCookie(response, user.id, user.username);
     return response;
   } catch {
     return NextResponse.json(

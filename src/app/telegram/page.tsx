@@ -3,7 +3,7 @@ import { getHomePublicData } from "@/lib/home-public-data";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function TelegramMiniAppPage() {
   const data = await getHomePublicData();
 
   return (

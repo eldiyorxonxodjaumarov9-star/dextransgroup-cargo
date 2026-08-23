@@ -65,3 +65,4 @@ cookies.txt
 
 .vercel
 .env*
+!.env.example

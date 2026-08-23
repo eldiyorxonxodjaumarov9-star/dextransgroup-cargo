@@ -1,6 +1,7 @@
 import "@/lib/env";
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
+import type { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { SESSION_COOKIE } from "./constants";
@@ -85,4 +86,20 @@ export async function requireAdmin() {
     throw new Error("UNAUTHORIZED");
   }
   return session;
+}
+
+/** Attach the existing signed admin session cookie to a NextResponse. */
+export function attachAdminSessionCookie(
+  response: NextResponse,
+  userId: string,
+  username: string
+) {
+  const token = createSessionToken(userId, username);
+  response.cookies.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
 }

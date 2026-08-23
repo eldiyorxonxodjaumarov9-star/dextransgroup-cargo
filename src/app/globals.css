@@ -612,6 +612,60 @@ button:hover .arrow-circle {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/* Telegram Mini App viewport / safe-area adaptation */
+html.telegram-mini-app {
+  --tg-safe-top: max(
+    var(--tg-content-safe-area-inset-top, 0px),
+    var(--tg-safe-area-inset-top, 0px)
+  );
+  --tg-safe-bottom: max(
+    var(--tg-content-safe-area-inset-bottom, 0px),
+    var(--tg-safe-area-inset-bottom, 0px)
+  );
+}
+
+html.telegram-mini-app .site-frame {
+  padding-top: max(
+    var(--frame-pad),
+    env(safe-area-inset-top),
+    var(--tg-safe-top, 0px)
+  );
+  padding-left: max(
+    var(--frame-pad),
+    env(safe-area-inset-left),
+    var(--tg-safe-area-inset-left, 0px)
+  );
+  padding-right: max(
+    var(--frame-pad),
+    env(safe-area-inset-right),
+    var(--tg-safe-area-inset-right, 0px)
+  );
+  min-height: var(--tg-viewport-stable-height, 100dvh);
+}
+
+html.telegram-mini-app .safe-bottom {
+  padding-bottom: max(
+    1rem,
+    env(safe-area-inset-bottom),
+    var(--tg-safe-bottom, 0px)
+  );
+}
+
+html.telegram-mini-app header.sticky,
+html.telegram-mini-app .sticky-header {
+  padding-top: max(
+    env(safe-area-inset-top),
+    var(--tg-safe-top, 0px),
+    0.5rem
+  );
+}
+
+html.telegram-mini-app {
+  scroll-padding-top: calc(
+    var(--header-h) + max(env(safe-area-inset-top), var(--tg-safe-top, 0px))
+  );
+}
+
 .sticky-header {
   position: sticky;
   top: 0;
