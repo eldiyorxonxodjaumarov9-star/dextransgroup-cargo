@@ -21,6 +21,8 @@ type NavItem = {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isTelegramAdminGate =
+    pathname === "/telegram/admin" || pathname.startsWith("/telegram/admin/");
   const { theme, setTheme } = useTheme();
   const { t } = useLocale();
   const reduced = useReducedMotion();
@@ -152,6 +154,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
           <main className="canvas-pad w-full min-w-0 max-w-full py-4 sm:py-6">{children}</main>
           <SiteFooter />
+        </div>
+      </div>
+    );
+  }
+
+  // Telegram admin gate: never wrap with public home chrome
+  if (isTelegramAdminGate) {
+    return (
+      <div className="site-frame">
+        <div className="site-canvas min-h-[100dvh] w-full min-w-0 max-w-full">
+          <main className="w-full min-w-0 max-w-full">{children}</main>
         </div>
       </div>
     );

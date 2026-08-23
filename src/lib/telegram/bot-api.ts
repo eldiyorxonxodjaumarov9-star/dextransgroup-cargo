@@ -19,14 +19,20 @@ export function buildStartInlineKeyboard(options: {
   isAdmin: boolean;
 }): InlineKeyboardMarkup {
   const appUrl = options.appUrl.replace(/\/$/, "");
+  const publicUrl = `${appUrl}/telegram`;
+  const adminUrl = `${appUrl}/telegram/admin`;
+  if (publicUrl === adminUrl) {
+    throw new Error("Public and admin Mini App URLs must differ");
+  }
+
   const rows: InlineWebAppButton[][] = [
-    [{ text: "🚚 Saytni ochish", web_app: { url: `${appUrl}/telegram` } }],
+    [{ text: "🚚 Saytni ochish", web_app: { url: publicUrl } }],
   ];
   if (options.isAdmin) {
     rows.push([
       {
         text: "🔐 Admin panel",
-        web_app: { url: `${appUrl}/telegram/admin` },
+        web_app: { url: adminUrl },
       },
     ]);
   }

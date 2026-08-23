@@ -55,11 +55,32 @@ describe("start keyboard", () => {
       isAdmin: true,
     });
     assert.equal(kb.inline_keyboard.length, 2);
+    assert.equal(kb.inline_keyboard[0][0].text, "🚚 Saytni ochish");
     assert.equal(kb.inline_keyboard[1][0].text, "🔐 Admin panel");
+    assert.equal(
+      kb.inline_keyboard[0][0].web_app.url,
+      "https://example.com/telegram"
+    );
     assert.equal(
       kb.inline_keyboard[1][0].web_app.url,
       "https://example.com/telegram/admin"
     );
+    assert.notEqual(
+      kb.inline_keyboard[0][0].web_app.url,
+      kb.inline_keyboard[1][0].web_app.url
+    );
+  });
+
+  it("public and admin Mini App paths stay distinct", () => {
+    const kb = buildStartInlineKeyboard({
+      appUrl: "https://dextransgroup-cargo.vercel.app",
+      isAdmin: true,
+    });
+    const publicUrl = kb.inline_keyboard[0][0].web_app.url;
+    const adminUrl = kb.inline_keyboard[1][0].web_app.url;
+    assert.match(publicUrl, /\/telegram$/);
+    assert.match(adminUrl, /\/telegram\/admin$/);
+    assert.notEqual(publicUrl, adminUrl);
   });
 });
 

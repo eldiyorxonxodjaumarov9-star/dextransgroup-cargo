@@ -54,7 +54,7 @@ export async function handleTelegramStartUpdate(options: {
       "",
       "Dextrans Group Cargo rasmiy botiga xush kelibsiz.",
       "",
-      "Quyidagi tugma orqali yuklar, omborlar, operatorlar va kompaniya xizmatlarini Telegram ichida ko‘rishingiz mumkin.",
+      "Quyidagi tugmalar orqali kompaniya xizmatlaridan foydalanishingiz mumkin.",
     ].join("\n"),
     {
       replyMarkup: keyboard,
