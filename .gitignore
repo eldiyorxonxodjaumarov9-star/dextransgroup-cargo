@@ -66,3 +66,5 @@ cookies.txt
 .vercel
 .env*
 !.env.example
+
+.telegram-setup-state.json
