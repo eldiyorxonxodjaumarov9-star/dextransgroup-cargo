@@ -65,7 +65,12 @@ async function main() {
 
   console.log("3) Setting /start command…");
   await api(token, "setMyCommands", {
-    commands: [{ command: "start", description: "Open Dextrans Mini App" }],
+    commands: [
+      {
+        command: "start",
+        description: "Dextrans Mini App’ni ochish",
+      },
+    ],
   });
   console.log("   Commands updated");
 

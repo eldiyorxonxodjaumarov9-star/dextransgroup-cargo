@@ -49,9 +49,13 @@ export async function handleTelegramStartUpdate(options: {
 
   await sendMessage(
     chatId,
-    isAdmin
-      ? "DextransGroup Cargo Mini App. Saytni oching yoki admin panelga kiring."
-      : "DextransGroup Cargo Mini App. Saytni ochish uchun tugmani bosing.",
+    [
+      "Assalomu alaykum! 👋",
+      "",
+      "Dextrans Group Cargo rasmiy botiga xush kelibsiz.",
+      "",
+      "Quyidagi tugma orqali yuklar, omborlar, operatorlar va kompaniya xizmatlarini Telegram ichida ko‘rishingiz mumkin.",
+    ].join("\n"),
     {
       replyMarkup: keyboard,
       botToken: options.botToken,
