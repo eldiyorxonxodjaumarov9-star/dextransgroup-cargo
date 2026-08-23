@@ -21,7 +21,7 @@ export function WarehouseRegionButtons({
       <Reveal>
         <Link
           href="/warehouses/china"
-          className="group relative flex min-h-[320px] flex-col justify-between overflow-hidden bg-[var(--accent)] p-7 text-white sm:min-h-[380px] sm:p-9"
+          className="group relative flex min-h-[280px] flex-col justify-between overflow-hidden bg-[var(--accent)] p-5 text-white sm:min-h-[380px] sm:p-9"
         >
           <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-35">
             <Image
@@ -39,10 +39,10 @@ export function WarehouseRegionButtons({
             </span>
           </div>
           <div className="relative space-y-4">
-            <p className="text-[clamp(4rem,10vw,7rem)] font-medium leading-none tracking-tight opacity-30">
+            <p className="text-[clamp(3rem,18vw,7rem)] font-medium leading-none tracking-tight opacity-30">
               CN
             </p>
-            <h3 className="text-3xl font-medium tracking-tight sm:text-4xl">
+            <h3 className="break-words text-2xl font-medium tracking-tight sm:text-4xl">
               {t.warehouse.chinaTitle}
             </h3>
             <p className="text-sm text-white/75">
@@ -58,7 +58,7 @@ export function WarehouseRegionButtons({
       <Reveal delay={0.1}>
         <Link
           href="/warehouses/tashkent"
-          className="group relative flex min-h-[320px] flex-col justify-between overflow-hidden bg-[var(--cream)] p-7 text-[#111] sm:min-h-[380px] sm:p-9"
+          className="group relative flex min-h-[280px] flex-col justify-between overflow-hidden bg-[var(--cream)] p-5 text-[#111] sm:min-h-[380px] sm:p-9"
         >
           <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-25">
             <Image
@@ -76,10 +76,10 @@ export function WarehouseRegionButtons({
             </span>
           </div>
           <div className="relative space-y-4">
-            <p className="text-[clamp(4rem,10vw,7rem)] font-medium leading-none tracking-tight text-[#111]/15">
+            <p className="text-[clamp(3rem,18vw,7rem)] font-medium leading-none tracking-tight text-[#111]/15">
               UZ
             </p>
-            <h3 className="text-3xl font-medium tracking-tight sm:text-4xl">
+            <h3 className="break-words text-2xl font-medium tracking-tight sm:text-4xl">
               {t.warehouse.tashkentTitle}
             </h3>
             <p className="text-sm text-[#111]/55">

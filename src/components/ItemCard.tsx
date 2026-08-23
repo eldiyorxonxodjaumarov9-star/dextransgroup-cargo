@@ -120,7 +120,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
         <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
           {isPdf && item.pdfUrl && (
-            <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="cta-capsule cta-capsule-orange group inline-flex">
+            <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="cta-capsule cta-capsule-orange group inline-flex w-full">
               <span className="cta-label">{t.item.openPdf}</span>
               <span className="arrow-circle arrow-circle-light">
                 <ArrowUpRight size={16} />

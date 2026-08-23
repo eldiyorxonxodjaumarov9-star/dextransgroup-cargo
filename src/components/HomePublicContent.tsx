@@ -92,7 +92,6 @@ export function HomePublicContent({
   const [cargoTab, setCargoTab] = useState<"NEW" | "IN_TRANSIT" | "ARRIVED">(
     "NEW"
   );
-  const [hoveredChannel, setHoveredChannel] = useState<string | null>(null);
 
   const categoryCards = channelMeta.map((card) => {
     if (card.id === "logistika") {
@@ -163,16 +162,16 @@ export function HomePublicContent({
       <HashScroll />
 
       {/* HERO */}
-      <section id="home" className="canvas-pad scroll-mt-28 pt-6 sm:pt-10 lg:pt-12">
-        <div className="grid gap-8 lg:grid-cols-[1.35fr_0.75fr] lg:items-end lg:gap-12">
-          <h1 className="max-w-[11ch] text-[clamp(2.75rem,7.5vw,5.75rem)] font-medium leading-[1.02] tracking-[-0.04em] text-[var(--text)]">
+      <section id="home" className="canvas-pad scroll-mt-24 pt-4 sm:scroll-mt-28 sm:pt-10 lg:pt-12">
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr] lg:items-end lg:gap-12">
+          <h1 className="max-w-full text-[clamp(2.35rem,11vw,5.75rem)] font-medium leading-[1.05] tracking-[-0.04em] text-[var(--text)] sm:max-w-[11ch] sm:text-[clamp(2.75rem,7.5vw,5.75rem)] sm:leading-[1.02]">
             {headline.map((line, index) => (
               <motion.span
                 key={line}
-                className="block overflow-visible"
-                initial={reduced ? false : { y: "110%", opacity: 0 }}
-                animate={{ y: "0%", opacity: 1 }}
-                transition={{ delay: 0.12 + index * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                className="block overflow-visible break-words"
+                initial={reduced ? false : { y: 28, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.12 + index * 0.1, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               >
                 {line}
               </motion.span>
@@ -180,7 +179,7 @@ export function HomePublicContent({
           </h1>
 
           <motion.div
-            className="max-w-md space-y-5 lg:justify-self-end lg:pb-2"
+            className="max-w-md space-y-4 sm:space-y-5 lg:justify-self-end lg:pb-2"
             initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.5 }}
@@ -188,7 +187,7 @@ export function HomePublicContent({
             <p className="text-[15px] leading-relaxed text-[var(--muted)]">
               {t.home.heroText}
             </p>
-            <a href="#cargo" className="cta-capsule cta-capsule-orange group inline-flex">
+            <a href="#cargo" className="cta-capsule cta-capsule-orange group inline-flex w-full sm:w-auto">
               <span className="cta-label">{t.home.ctaCargo}</span>
               <span className="arrow-circle arrow-circle-light">
                 <ArrowUpRight size={16} />
@@ -197,12 +196,12 @@ export function HomePublicContent({
           </motion.div>
         </div>
 
-        <div className="relative mt-10 sm:mt-14 lg:mt-16">
+        <div className="relative mt-8 sm:mt-14 lg:mt-16">
           <motion.div
-            className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9]"
-            initial={reduced ? false : { clipPath: "inset(100% 0 0 0)" }}
-            animate={{ clipPath: "inset(0 0 0 0)" }}
-            transition={{ delay: 0.28, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9] lg:aspect-[21/9]"
+            initial={reduced ? false : { clipPath: "inset(12% 0 0 0)", opacity: 0.85 }}
+            animate={{ clipPath: "inset(0 0 0 0)", opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <Image
               src={HERO_IMAGE}
@@ -216,29 +215,29 @@ export function HomePublicContent({
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
           </motion.div>
 
-          <div className="relative z-10 -mt-10 grid gap-3 sm:-mt-14 sm:grid-cols-2 sm:gap-4 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:w-[min(520px,48%)] lg:translate-y-1/3">
+          <div className="relative z-10 mt-4 grid gap-3 sm:-mt-14 sm:mt-0 sm:grid-cols-2 sm:gap-4 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:w-[min(520px,48%)] lg:translate-y-1/3 lg:grid-cols-2">
             <motion.div
-              className="folder-card bg-[var(--accent)] p-5 text-white sm:p-6"
-              initial={reduced ? false : { opacity: 0, y: 36 }}
+              className="folder-card bg-[var(--accent)] p-4 text-white sm:p-6"
+              initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.55 }}
+              transition={{ delay: 0.45, duration: 0.5 }}
             >
-              <p className="text-sm text-white/80">{t.home.delivered}</p>
-              <p className="mt-3 text-[clamp(2.5rem,5vw,3.75rem)] font-medium leading-none tracking-tight">
+              <p className="break-words text-sm text-white/80">{t.home.delivered}</p>
+              <p className="mt-3 text-[clamp(2.1rem,8vw,3.75rem)] font-medium leading-none tracking-tight">
                 <CountUp value="1250+" />
               </p>
             </motion.div>
             <motion.div
-              className="folder-card bg-[var(--cream)] p-5 text-[#111] sm:p-6"
-              initial={reduced ? false : { opacity: 0, y: 36 }}
+              className="folder-card bg-[var(--cream)] p-4 text-[#111] sm:p-6"
+              initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.68, duration: 0.55 }}
+              transition={{ delay: 0.55, duration: 0.5 }}
             >
-              <p className="text-sm text-[#111]/60">{t.home.happyClients}</p>
-              <p className="mt-3 text-[clamp(2.5rem,5vw,3.75rem)] font-medium leading-none tracking-tight">
+              <p className="break-words text-sm text-[#111]/60">{t.home.happyClients}</p>
+              <p className="mt-3 text-[clamp(2.1rem,8vw,3.75rem)] font-medium leading-none tracking-tight">
                 <CountUp value="98%" />
               </p>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#111]/45">
+              <p className="mt-3 break-words text-xs font-semibold uppercase tracking-[0.16em] text-[#111]/45 sm:mt-4">
                 {t.home.support} · 24/7
               </p>
             </motion.div>
@@ -313,31 +312,21 @@ export function HomePublicContent({
 
           <div className="flex flex-col justify-center">
             {channelRows.map((card, index) => {
-              const active = hoveredChannel === card.id;
               const row = (
-                <div
-                  className="group relative flex items-center gap-4 border-b border-white/10 py-6 transition"
-                  onMouseEnter={() => setHoveredChannel(card.id)}
-                  onMouseLeave={() => setHoveredChannel(null)}
-                >
-                  <span
-                    className={cn(
-                      "absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--accent)] transition",
-                      active ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                <div className="group relative flex items-center gap-3 border-b border-white/10 py-5 transition sm:gap-4 sm:py-6">
+                  <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--accent)] opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" />
                   <div className="min-w-0 flex-1 pl-3">
-                    <h3 className="text-xl font-medium tracking-tight text-[var(--text)] sm:text-2xl">
+                    <h3 className="break-words text-lg font-medium tracking-tight text-[var(--text)] sm:text-2xl">
                       {card.title}
                     </h3>
                     <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
                       {card.description}
                     </p>
                   </div>
-                  <div className="relative hidden h-16 w-24 overflow-hidden opacity-0 transition group-hover:opacity-100 sm:block">
+                  <div className="relative hidden h-16 w-24 shrink-0 overflow-hidden opacity-0 transition group-hover:opacity-100 md:block">
                     <Image src={card.image} alt="" fill className="object-cover" unoptimized />
                   </div>
-                  <span className="arrow-circle">
+                  <span className="arrow-circle shrink-0">
                     <ArrowUpRight size={16} />
                   </span>
                 </div>
@@ -361,7 +350,7 @@ export function HomePublicContent({
 
       {/* VALUES */}
       <section className="canvas-pad section-space pt-0">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {values.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -392,8 +381,8 @@ export function HomePublicContent({
           <p className="max-w-xl text-[var(--muted)]">{t.home.cargoSubtitle}</p>
         </Reveal>
 
-        <Reveal className="mt-10">
-          <div className="flex flex-wrap gap-0 border-b border-white/10">
+        <Reveal className="mt-8 sm:mt-10">
+          <div className="tabs-scroll border-b border-white/10">
             {cargoSections.map((section) => {
               const count = items.filter((item) => item.category === section.category).length;
               const active = cargoTab === section.category;
@@ -403,12 +392,14 @@ export function HomePublicContent({
                   type="button"
                   onClick={() => setCargoTab(section.category)}
                   className={cn(
-                    "relative px-4 py-4 text-sm font-semibold transition sm:px-6",
+                    "relative shrink-0 px-4 py-4 text-sm font-semibold transition sm:px-6",
                     active ? "text-[var(--accent)]" : "text-[var(--muted)] hover:text-[var(--text)]"
                   )}
                 >
-                  {t.categories[section.category]}
-                  <span className="ml-2 text-xs opacity-60">({count})</span>
+                  <span className="whitespace-nowrap">
+                    {t.categories[section.category]}
+                    <span className="ml-2 text-xs opacity-60">({count})</span>
+                  </span>
                   {active && (
                     <motion.span
                       layoutId={reduced ? undefined : "cargo-underline"}

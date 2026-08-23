@@ -66,23 +66,23 @@ export function GuestServicesPageContent({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/#guest-services" className="btn btn-secondary text-sm">
           <ArrowLeft size={16} /> {t.guest.back}
         </Link>
-        <div className="flex flex-wrap gap-2">
+        <div className="tabs-scroll max-w-full gap-2 pb-1">
           {LOCALES.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setLocale(item.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
+              className={`min-h-11 shrink-0 rounded-full px-3 py-2 text-xs font-bold transition ${
                 locale === item.id
-                  ? "bg-[var(--brand-teal)] text-white"
-                  : "border border-border bg-card text-muted hover:text-foreground"
+                  ? "bg-[var(--accent)] text-white"
+                  : "border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]"
               }`}
             >
-              {item.label}
+              {item.short}
             </button>
           ))}
         </div>

@@ -114,39 +114,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.location.assign(item.href);
   }
 
+  const themeButton = (
+    <button
+      type="button"
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--panel-2)] text-[var(--text)]"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={t.nav.theme}
+    >
+      {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+    </button>
+  );
+
   if (isAdmin) {
     return (
       <div className="site-frame">
         <div className="site-canvas">
           <header className="sticky-header border-b border-[var(--border)] bg-[var(--panel)]">
-            <div className="canvas-pad flex h-16 items-center justify-between gap-3">
+            <div className="canvas-pad flex min-h-16 flex-wrap items-center justify-between gap-2 py-2">
               <Link href="/" className="min-w-0 shrink" aria-label="DextransGroup Cargo">
                 <BrandLogo
                   variant="nav"
                   priority
-                  className="h-8 w-auto max-w-[min(180px,50vw)]"
+                  className="h-8 w-auto max-w-[min(160px,46vw)]"
                 />
               </Link>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                 <LanguageSwitcher compact variant="nav" />
                 <Link
                   href="/#home"
-                  className="btn btn-secondary !min-h-10 !rounded-full !px-3 !py-2 !text-xs"
+                  className="btn btn-secondary !min-h-11 !rounded-full !px-3 !py-2 !text-xs"
                 >
                   {t.nav.backToSite}
                 </Link>
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)]"
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
-                  aria-label={t.nav.theme}
-                >
-                  {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
-                </button>
+                {themeButton}
               </div>
             </div>
           </header>
-          <main className="canvas-pad py-4 sm:py-6">{children}</main>
+          <main className="canvas-pad overflow-x-clip py-4 sm:py-6">{children}</main>
           <SiteFooter />
         </div>
       </div>
@@ -156,15 +160,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="site-frame">
       <div className="site-canvas">
+        {/* Mobile compact header */}
+        <header className="sticky top-0 z-[80] border-b border-white/10 bg-[var(--canvas)]/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
+          <div className="flex min-h-12 items-center gap-2">
+            <button
+              type="button"
+              className="min-w-0 shrink"
+              onClick={() => goNav(publicNav[0])}
+              aria-label={t.nav.home}
+            >
+              <BrandLogo
+                variant="nav"
+                priority
+                className="h-8 w-auto max-w-[min(150px,42vw)]"
+              />
+            </button>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+              <LanguageSwitcher compact variant="nav" />
+              {themeButton}
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)] text-white"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Desktop pill navbar */}
         <div
           className={cn(
-            "sticky top-0 z-[80] px-3 pt-3 sm:px-5 sm:pt-5 lg:px-8 lg:pt-6",
+            "sticky top-0 z-[80] hidden px-5 pt-5 lg:block lg:px-8 lg:pt-6",
             scrolled && "pb-2"
           )}
         >
           <motion.header
             className={cn(
-              "nav-pill mx-auto flex max-w-[1400px] items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3",
+              "nav-pill mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-3",
               scrolled && "shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)]"
             )}
             initial={reduced ? false : { y: -28, opacity: 0 }}
@@ -180,12 +216,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <BrandLogo
                 variant="nav"
                 priority
-                className="h-8 w-auto max-w-[min(160px,42vw)] sm:h-9 sm:max-w-[190px]"
+                className="h-9 w-auto max-w-[190px]"
               />
             </button>
 
             <nav
-              className="mx-auto hidden items-center gap-1 lg:flex"
+              className="mx-auto flex items-center gap-1"
               aria-label={t.nav.mainMenu}
             >
               {publicNav.map((item) => {
@@ -208,31 +244,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               })}
             </nav>
 
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-              <LanguageSwitcher compact variant="nav" className="hidden sm:block" />
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)] text-[var(--text)]"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                aria-label={t.nav.theme}
-              >
-                {mounted ? (isDark ? <Sun size={15} /> : <Moon size={15} />) : <Moon size={15} />}
-              </button>
-              <Link href="/admin" className="cta-capsule hidden md:inline-flex">
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <LanguageSwitcher compact variant="nav" />
+              {themeButton}
+              <Link href="/admin" className="cta-capsule inline-flex">
                 <span className="cta-label">{t.nav.admin}</span>
                 <span className="arrow-circle">
                   <ArrowUpRight size={16} />
                 </span>
               </Link>
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)] lg:hidden"
-                onClick={() => setMenuOpen((open) => !open)}
-                aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
-                aria-expanded={menuOpen}
-              >
-                {menuOpen ? <X size={18} /> : <Menu size={18} />}
-              </button>
             </div>
           </motion.header>
         </div>
@@ -240,7 +260,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <AnimatePresence>
           {menuOpen && (
             <motion.div
-              className="fixed inset-0 z-[90] lg:hidden"
+              className="fixed inset-0 z-[95] lg:hidden"
               role="dialog"
               aria-modal="true"
               initial={{ opacity: 0 }}
@@ -249,22 +269,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <button
                 type="button"
-                className="absolute inset-0 bg-black/70"
+                className="absolute inset-0 bg-black/75"
                 aria-label={t.nav.closeMenu}
                 onClick={() => setMenuOpen(false)}
               />
               <motion.div
-                className="absolute inset-x-3 top-[5.5rem] overflow-hidden rounded-[28px] bg-[var(--panel)] p-4 text-[var(--text)] shadow-2xl sm:inset-x-5"
-                initial={reduced ? false : { y: -16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -12, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[var(--panel)] text-[var(--text)] shadow-2xl safe-bottom"
+                initial={reduced ? false : { y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", stiffness: 340, damping: 34 }}
               >
-                <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4">
                   <p className="text-sm font-semibold">{t.nav.menu}</p>
-                  <LanguageSwitcher compact variant="nav" />
+                  <button
+                    type="button"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--panel-2)]"
+                    onClick={() => setMenuOpen(false)}
+                    aria-label={t.nav.closeMenu}
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <nav className="grid gap-1" aria-label={t.nav.mobileMenu}>
+                <nav
+                  className="overflow-y-auto px-3 py-3"
+                  aria-label={t.nav.mobileMenu}
+                >
                   {publicNav.map((item, index) => {
                     const active = currentSection === item.id;
                     return (
@@ -272,28 +302,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         key={item.id}
                         type="button"
                         onClick={() => goNav(item)}
-                        initial={reduced ? false : { opacity: 0, y: 10 }}
+                        initial={reduced ? false : { opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.04 * index }}
                         className={cn(
-                          "flex min-h-12 items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-semibold",
+                          "mb-1 flex min-h-12 w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-semibold",
                           active
                             ? "bg-[var(--accent)] text-white"
                             : "text-[var(--text)] hover:bg-[var(--panel-2)]"
                         )}
                       >
-                        {item.label}
-                        <ArrowUpRight size={16} />
+                        <span className="min-w-0 break-words pr-3">{item.label}</span>
+                        <ArrowUpRight size={16} className="shrink-0" />
                       </motion.button>
                     );
                   })}
                   <Link
                     href="/admin"
                     onClick={() => setMenuOpen(false)}
-                    className="cta-capsule mt-2"
+                    className="cta-capsule cta-capsule-orange mt-3 w-full"
                   >
                     <span className="cta-label flex-1 justify-center">{t.nav.admin}</span>
-                    <span className="arrow-circle">
+                    <span className="arrow-circle arrow-circle-light">
                       <ArrowUpRight size={16} />
                     </span>
                   </Link>
@@ -303,7 +333,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </AnimatePresence>
 
-        <div className="pb-8 pt-2 lg:pb-12">{children}</div>
+        <div className="overflow-x-clip pb-8 pt-2 lg:pb-12">{children}</div>
         <SiteFooter />
       </div>
     </div>

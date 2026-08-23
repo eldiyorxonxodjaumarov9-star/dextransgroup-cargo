@@ -111,7 +111,7 @@ export default function WarehouseMap({
   }
 
   return (
-    <div className="h-56 w-full overflow-hidden rounded-2xl border border-border shadow-inner sm:h-72 md:h-80">
+    <div className="map-frame h-56 w-full overflow-hidden border border-[var(--border)] sm:h-72 md:h-80">
       <MapContainer
         center={[coords.lat, coords.lng]}
         zoom={15}

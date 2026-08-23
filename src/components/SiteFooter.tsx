@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useLocale } from "@/components/LocaleProvider";
 import { TELEGRAM_CHANNELS, TAPLINK_SOURCE } from "@/lib/channels";
+import { cn } from "@/lib/utils";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
   const { t } = useLocale();
+  const [open, setOpen] = useState<"nav" | "contact" | null>("nav");
 
   const footerLinks = [
     { href: "/#home", label: t.nav.home },
@@ -17,16 +21,27 @@ export function SiteFooter() {
     { href: "/#operators", label: t.nav.operators },
   ];
 
+  const contacts = [
+    ...TELEGRAM_CHANNELS.filter((c) => c.kind === "telegram")
+      .slice(0, 3)
+      .map((channel) => ({
+        href: channel.href,
+        label: channel.username || channel.title,
+        external: true as const,
+      })),
+    { href: TAPLINK_SOURCE, label: "TapLink", external: true as const },
+  ];
+
   return (
-    <footer className="mt-8 border-t border-white/10 bg-[var(--canvas)] text-[var(--text)] safe-bottom">
-      <div className="canvas-pad py-16 sm:py-20 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr]">
-          <div className="space-y-8">
+    <footer className="mt-8 overflow-x-clip border-t border-white/10 bg-[var(--canvas)] text-[var(--text)] safe-bottom">
+      <div className="canvas-pad py-12 sm:py-20 lg:py-24">
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+          <div className="min-w-0 space-y-6 sm:space-y-8">
             <BrandLogo
               variant="worldwide"
-              className="max-w-[min(280px,80vw)]"
+              className="max-w-[min(240px,78vw)]"
             />
-            <p className="max-w-[14ch] text-[clamp(2.2rem,5vw,4rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+            <p className="max-w-[16ch] text-[clamp(1.7rem,7vw,4rem)] font-medium leading-[1.08] tracking-[-0.035em]">
               Dextrans Group Cargo
             </p>
             <p className="max-w-md text-sm leading-relaxed text-[var(--muted)]">
@@ -35,7 +50,7 @@ export function SiteFooter() {
             <div className="h-px w-28 bg-[var(--accent)]" />
           </div>
 
-          <div className="grid gap-10 sm:grid-cols-2">
+          <div className="hidden gap-10 sm:grid sm:grid-cols-2">
             <div>
               <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t.footer.menu}
@@ -45,7 +60,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-flex min-h-10 items-center text-[var(--text)]/80 transition hover:text-[var(--accent)]"
+                      className="inline-flex min-h-11 items-center text-[var(--text)]/80 transition hover:text-[var(--accent)]"
                     >
                       {link.label}
                     </Link>
@@ -53,43 +68,84 @@ export function SiteFooter() {
                 ))}
               </ul>
             </div>
-
             <div>
               <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t.footer.contact}
               </p>
               <ul className="space-y-1 text-sm text-[var(--text)]/75">
-                {TELEGRAM_CHANNELS.filter((c) => c.kind === "telegram")
-                  .slice(0, 3)
-                  .map((channel) => (
-                    <li key={channel.id}>
-                      <a
-                        href={channel.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex min-h-10 items-center break-all transition hover:text-[var(--accent)]"
-                      >
-                        {channel.username || channel.title}
-                      </a>
-                    </li>
-                  ))}
-                <li>
-                  <a
-                    href={TAPLINK_SOURCE}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex min-h-10 items-center transition hover:text-[var(--accent)]"
-                  >
-                    TapLink
-                  </a>
-                </li>
+                {contacts.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 items-center break-all transition hover:text-[var(--accent)]"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+          </div>
+
+          <div className="space-y-2 sm:hidden">
+            {(
+              [
+                { key: "nav" as const, title: t.footer.menu, items: footerLinks },
+                { key: "contact" as const, title: t.footer.contact, items: contacts },
+              ] as const
+            ).map((block) => (
+              <div key={block.key} className="border border-white/10">
+                <button
+                  type="button"
+                  className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
+                  onClick={() =>
+                    setOpen((value) => (value === block.key ? null : block.key))
+                  }
+                  aria-expanded={open === block.key}
+                >
+                  {block.title}
+                  <ChevronDown
+                    size={16}
+                    className={cn(
+                      "transition",
+                      open === block.key && "rotate-180"
+                    )}
+                  />
+                </button>
+                {open === block.key && (
+                  <ul className="space-y-1 border-t border-white/10 px-4 py-3 text-sm text-white/70">
+                    {block.items.map((item) => (
+                      <li key={item.href}>
+                        {"external" in item && item.external ? (
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-h-11 items-center break-all"
+                          >
+                            {item.label}
+                          </a>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="inline-flex min-h-11 items-center"
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="border-t border-white/10 px-6 py-5 text-center text-xs text-[var(--muted)] sm:px-10">
+      <div className="border-t border-white/10 px-5 py-5 text-center text-xs leading-relaxed text-[var(--muted)] sm:px-10">
         © {year} Dextrans Group Cargo. {t.footer.rights}
       </div>
     </footer>

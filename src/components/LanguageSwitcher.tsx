@@ -17,6 +17,18 @@ import { cn } from "@/lib/utils";
 
 type Placement = "bottom-end" | "right-start" | "top-end";
 
+function useIsNarrow(breakpoint = 768) {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const update = () => setNarrow(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [breakpoint]);
+  return narrow;
+}
+
 export function LanguageSwitcher({
   className,
   compact = false,
@@ -30,6 +42,7 @@ export function LanguageSwitcher({
 }) {
   const { locale, setLocale, t } = useLocale();
   const reduced = useReducedMotion();
+  const narrow = useIsNarrow();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 196 });
@@ -45,7 +58,7 @@ export function LanguageSwitcher({
 
   const updatePosition = useCallback(() => {
     const btn = buttonRef.current;
-    if (!btn) return;
+    if (!btn || narrow) return;
     const rect = btn.getBoundingClientRect();
     const menuWidth = Math.max(196, rect.width);
     const menuHeight = 240;
@@ -67,10 +80,10 @@ export function LanguageSwitcher({
     }
 
     setCoords({ top, left, width: menuWidth });
-  }, [placement]);
+  }, [narrow, placement]);
 
   useLayoutEffect(() => {
-    if (!open) return;
+    if (!open || narrow) return;
     updatePosition();
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
@@ -78,7 +91,7 @@ export function LanguageSwitcher({
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [open, updatePosition]);
+  }, [open, narrow, updatePosition]);
 
   useEffect(() => {
     if (!open) return;
@@ -149,14 +162,44 @@ export function LanguageSwitcher({
     first?.focus();
   }, [open]);
 
+  const options = LOCALES.map((item) => {
+    const selected = item.id === locale;
+    return (
+      <button
+        key={item.id}
+        type="button"
+        role="option"
+        data-locale-option
+        aria-selected={selected}
+        onClick={() => choose(item.id)}
+        className={cn(
+          "flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left text-sm outline-none transition",
+          selected
+            ? "bg-[#ff4a0a]/15 font-bold text-[#ff4a0a]"
+            : "text-[#f7f7f2]/90 hover:bg-white/6 focus:bg-white/8"
+        )}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {selected ? (
+            <Check size={14} className="shrink-0 text-[#ff4a0a]" />
+          ) : (
+            <span className="inline-block w-3.5 shrink-0" />
+          )}
+          <span className="break-words">{item.label}</span>
+        </span>
+        <span className="shrink-0 text-xs text-[#8a8a86]">{item.short}</span>
+      </button>
+    );
+  });
+
   return (
     <div className={cn("relative", className)}>
       <button
         ref={buttonRef}
         type="button"
         className={cn(
-          "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition",
-          compact && "!min-h-10 !px-2.5",
+          "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition",
+          compact && "!min-h-11 !px-2.5",
           variant === "default" &&
             "border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]",
           (variant === "dock" || variant === "nav") &&
@@ -180,58 +223,64 @@ export function LanguageSwitcher({
       {mounted &&
         createPortal(
           <AnimatePresence>
-            {open && (
-              <motion.div
-                ref={menuRef}
-                id={listboxId}
-                role="listbox"
-                aria-label={t.lang}
-                tabIndex={-1}
-                onKeyDown={onMenuKeyDown}
-                initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                transition={{ duration: 0.16 }}
-                style={{
-                  position: "fixed",
-                  top: coords.top,
-                  left: coords.left,
-                  width: coords.width,
-                  zIndex: 9999,
-                }}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-[#1b1b1b] py-1.5 text-[#f7f7f2] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.75)]"
-              >
-                {LOCALES.map((item) => {
-                  const selected = item.id === locale;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      role="option"
-                      data-locale-option
-                      aria-selected={selected}
-                      onClick={() => choose(item.id)}
-                      className={cn(
-                        "flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm outline-none transition",
-                        selected
-                          ? "bg-[#ff4a0a]/15 font-bold text-[#ff4a0a]"
-                          : "text-[#f7f7f2]/90 hover:bg-white/6 focus:bg-white/8"
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        {selected ? (
-                          <Check size={14} className="text-[#ff4a0a]" />
-                        ) : (
-                          <span className="inline-block w-3.5" />
-                        )}
-                        {item.label}
-                      </span>
-                      <span className="text-xs text-[#8a8a86]">{item.short}</span>
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
+            {open &&
+              (narrow ? (
+                <motion.div
+                  className="fixed inset-0 z-[9999]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <button
+                    type="button"
+                    className="absolute inset-0 bg-black/60"
+                    aria-label="Close"
+                    onClick={() => setOpen(false)}
+                  />
+                  <motion.div
+                    ref={menuRef}
+                    id={listboxId}
+                    role="listbox"
+                    aria-label={t.lang}
+                    tabIndex={-1}
+                    onKeyDown={onMenuKeyDown}
+                    initial={reduced ? false : { y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", stiffness: 360, damping: 34 }}
+                    className="absolute inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto rounded-t-[24px] border border-white/10 bg-[#1b1b1b] py-2 text-[#f7f7f2] shadow-2xl safe-bottom"
+                  >
+                    <div className="mx-auto mb-2 mt-1 h-1 w-10 rounded-full bg-white/20" />
+                    <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8a8a86]">
+                      {t.lang}
+                    </p>
+                    {options}
+                  </motion.div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  ref={menuRef}
+                  id={listboxId}
+                  role="listbox"
+                  aria-label={t.lang}
+                  tabIndex={-1}
+                  onKeyDown={onMenuKeyDown}
+                  initial={reduced ? false : { opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.16 }}
+                  style={{
+                    position: "fixed",
+                    top: coords.top,
+                    left: coords.left,
+                    width: coords.width,
+                    zIndex: 9999,
+                  }}
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-[#1b1b1b] py-1.5 text-[#f7f7f2] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.75)]"
+                >
+                  {options}
+                </motion.div>
+              ))}
           </AnimatePresence>,
           document.body
         )}
