@@ -1,18 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -26,8 +22,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3f6f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#07111f" },
+    { media: "(prefers-color-scheme: light)", color: "#FF4A0A" },
+    { media: "(prefers-color-scheme: dark)", color: "#FF4A0A" },
   ],
 };
 
@@ -37,10 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-[100dvh] antialiased`}
-      >
+    <html lang="uz" className="dark" suppressHydrationWarning>
+      <body className={`${manrope.variable} min-h-[100dvh] antialiased`}>
         <ThemeProvider>
           <LocaleProvider>
             <AppShell>{children}</AppShell>

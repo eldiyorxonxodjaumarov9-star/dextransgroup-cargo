@@ -4,7 +4,7 @@ export const LOCALES: Array<{ id: Locale; label: string; short: string }> = [
   { id: "uz", label: "O‘zbekcha", short: "UZ" },
   { id: "ru", label: "Русский", short: "RU" },
   { id: "en", label: "English", short: "EN" },
-  { id: "zh", label: "中文", short: "中文" },
+  { id: "zh", label: "中文", short: "ZH" },
   { id: "kk", label: "Қазақша", short: "KK" },
 ];
 

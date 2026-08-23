@@ -14,10 +14,10 @@ export function WarehouseRegionHeader({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-teal)]">
+      <p className="section-kicker">
         {isChina ? "🇨🇳" : "🇺🇿"} {t.regions[region]}
       </p>
-      <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+      <h1 className="section-title">
         {isChina ? t.warehouse.chinaTitle : t.warehouse.tashkentTitle}
       </h1>
       <p className="max-w-2xl text-sm text-muted">

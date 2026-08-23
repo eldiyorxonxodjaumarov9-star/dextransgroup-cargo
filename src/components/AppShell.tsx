@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { ArrowUpRight, Menu, Moon, Sun, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -11,16 +12,24 @@ import { useLocale } from "@/components/LocaleProvider";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 
+type NavItem = {
+  id: string;
+  href: string;
+  label: string;
+};
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const { theme, setTheme } = useTheme();
   const { t } = useLocale();
+  const reduced = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
 
-  const publicNav = useMemo(
+  const publicNav: NavItem[] = useMemo(
     () => [
       { id: "home", href: "/#home", label: t.nav.home },
       { id: "guest-services", href: "/guest-services", label: t.nav.guests },
@@ -36,7 +45,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const isDark = mounted && theme === "dark";
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const isDark = mounted ? theme !== "light" : true;
+  const currentSection = pathname.startsWith("/guest-services")
+    ? "guest-services"
+    : activeSection;
 
   useEffect(() => {
     document.body.classList.toggle("nav-locked", menuOpen);
@@ -54,12 +73,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isAdmin) return;
+    if (pathname.startsWith("/guest-services")) return;
 
     const ids = publicNav.map((item) => item.id);
     const nodes = ids
       .map((id) => document.getElementById(id))
       .filter((node): node is HTMLElement => Boolean(node));
-
     if (!nodes.length) return;
 
     const observer = new IntersectionObserver(
@@ -67,195 +86,226 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]?.target?.id) {
-          setActiveSection(visible[0].target.id);
-        }
+        if (visible[0]?.target?.id) setActiveSection(visible[0].target.id);
       },
-      {
-        rootMargin: "-18% 0px -55% 0px",
-        threshold: [0.12, 0.3, 0.5],
-      }
+      { rootMargin: "-18% 0px -55% 0px", threshold: [0.15, 0.35, 0.55] }
     );
 
     nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
   }, [isAdmin, pathname, publicNav]);
 
-  function goNav(item: (typeof publicNav)[number]) {
+  function goNav(item: NavItem) {
     setMenuOpen(false);
     if (item.href.startsWith("/guest-services") || !item.href.includes("#")) {
-      window.location.href = item.href;
+      window.location.assign(item.href);
       return;
     }
-    const id = item.id;
-    const node = document.getElementById(id);
+    const node = document.getElementById(item.id);
     if (node) {
-      node.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveSection(id);
-      window.history.replaceState(null, "", `/#${id}`);
+      node.scrollIntoView({
+        behavior: reduced ? "auto" : "smooth",
+        block: "start",
+      });
+      setActiveSection(item.id);
+      window.history.replaceState(null, "", `/#${item.id}`);
       return;
     }
-    window.location.href = item.href;
+    window.location.assign(item.href);
   }
 
   if (isAdmin) {
     return (
-      <div className="min-h-[100dvh] bg-[var(--shell-bg)] text-foreground">
-        <header className="sticky-header border-b border-border bg-card/95 backdrop-blur">
-          <div className="page-wrap flex h-16 items-center justify-between gap-3">
-            <Link href="/" className="min-w-0 shrink" aria-label="DextransGroup Cargo">
-              <BrandLogo
-                variant="nav"
-                priority
-                className="h-9 w-auto max-w-[min(190px,52vw)] sm:h-10 sm:max-w-[220px]"
-              />
-            </Link>
-            <div className="flex shrink-0 items-center gap-2">
-              <LanguageSwitcher compact />
-              <Link
-                href="/#home"
-                className="btn btn-secondary !min-h-10 !px-3 !py-2 text-xs"
-              >
-                {t.nav.backToSite}
+      <div className="site-frame">
+        <div className="site-canvas">
+          <header className="sticky-header border-b border-[var(--border)] bg-[var(--panel)]">
+            <div className="canvas-pad flex h-16 items-center justify-between gap-3">
+              <Link href="/" className="min-w-0 shrink" aria-label="DextransGroup Cargo">
+                <BrandLogo
+                  variant="nav"
+                  priority
+                  className="h-8 w-auto max-w-[min(180px,50vw)]"
+                />
               </Link>
-              <button
-                type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                aria-label={t.nav.theme}
-              >
-                {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <LanguageSwitcher compact variant="nav" />
+                <Link
+                  href="/#home"
+                  className="btn btn-secondary !min-h-10 !rounded-full !px-3 !py-2 !text-xs"
+                >
+                  {t.nav.backToSite}
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)]"
+                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  aria-label={t.nav.theme}
+                >
+                  {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+                </button>
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="page-wrap py-4 sm:py-6">{children}</main>
-        <SiteFooter />
+          </header>
+          <main className="canvas-pad py-4 sm:py-6">{children}</main>
+          <SiteFooter />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--shell-bg)] text-foreground">
-      <header className="sticky-header border-b border-border bg-card/95 backdrop-blur">
-        <div className="page-wrap flex h-[70px] items-center justify-between gap-2 sm:gap-3">
-          <button
-            type="button"
-            className="min-w-0 shrink"
-            onClick={() => goNav(publicNav[0])}
-            aria-label={t.nav.home}
+    <div className="site-frame">
+      <div className="site-canvas">
+        <div
+          className={cn(
+            "sticky top-0 z-[80] px-3 pt-3 sm:px-5 sm:pt-5 lg:px-8 lg:pt-6",
+            scrolled && "pb-2"
+          )}
+        >
+          <motion.header
+            className={cn(
+              "nav-pill mx-auto flex max-w-[1400px] items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3",
+              scrolled && "shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)]"
+            )}
+            initial={reduced ? false : { y: -28, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <BrandLogo
-              variant="nav"
-              priority
-              className="h-10 w-auto max-w-[min(210px,55vw)] sm:h-11 sm:max-w-[250px]"
-            />
-          </button>
-
-          <nav className="hidden items-center gap-1 lg:flex" aria-label={t.nav.mainMenu}>
-            {publicNav.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => goNav(item)}
-                className={cn(
-                  "rounded-xl px-3 py-2 text-sm font-semibold transition",
-                  (pathname.startsWith("/guest-services")
-                    ? item.id === "guest-services"
-                    : activeSection === item.id)
-                    ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
-                    : "text-muted hover:bg-background hover:text-foreground"
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-            <Link
-              href="/admin"
-              className="rounded-xl px-3 py-2 text-sm font-semibold text-muted transition hover:bg-background hover:text-foreground"
-            >
-              {t.nav.admin}
-            </Link>
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              aria-label={t.nav.theme}
+              className="flex min-w-0 shrink items-center gap-2 pl-1"
+              onClick={() => goNav(publicNav[0])}
+              aria-label={t.nav.home}
             >
-              {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+              <BrandLogo
+                variant="nav"
+                priority
+                className="h-8 w-auto max-w-[min(160px,42vw)] sm:h-9 sm:max-w-[190px]"
+              />
             </button>
-            <LanguageSwitcher className="hidden sm:block" />
-            <button
-              type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border lg:hidden"
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-          </div>
-        </div>
-      </header>
 
-      {menuOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/45"
-            aria-label={t.nav.closeMenu}
-            onClick={() => setMenuOpen(false)}
-          />
-          <div className="absolute inset-y-0 right-0 flex w-[min(320px,88vw)] flex-col border-l border-border bg-card shadow-2xl safe-bottom">
-            <div className="flex items-center justify-between border-b border-border px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="text-sm font-bold">{t.nav.menu}</p>
-              <div className="flex items-center gap-2">
-                <LanguageSwitcher compact />
-                <button
-                  type="button"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border"
-                  onClick={() => setMenuOpen(false)}
-                  aria-label={t.nav.close}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label={t.nav.mobileMenu}>
-              {publicNav.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => goNav(item)}
-                  className={cn(
-                    "min-h-11 rounded-xl px-3 py-3 text-left text-sm font-semibold",
-                    (pathname.startsWith("/guest-services")
-                      ? item.id === "guest-services"
-                      : activeSection === item.id)
-                      ? "bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]"
-                      : "text-foreground hover:bg-background"
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-              <Link
-                href="/admin"
-                onClick={() => setMenuOpen(false)}
-                className="min-h-11 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-background"
-              >
-                {t.nav.admin}
-              </Link>
+            <nav
+              className="mx-auto hidden items-center gap-1 lg:flex"
+              aria-label={t.nav.mainMenu}
+            >
+              {publicNav.map((item) => {
+                const active = currentSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => goNav(item)}
+                    className={cn(
+                      "rounded-full px-3.5 py-2 text-[13px] font-medium transition",
+                      active
+                        ? "text-[var(--text)]"
+                        : "text-[var(--muted)] hover:text-[var(--text)]"
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </nav>
-          </div>
-        </div>
-      )}
 
-      <div className="page-wrap py-4 sm:py-6">{children}</div>
-      <SiteFooter />
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <LanguageSwitcher compact variant="nav" className="hidden sm:block" />
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)] text-[var(--text)]"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={t.nav.theme}
+              >
+                {mounted ? (isDark ? <Sun size={15} /> : <Moon size={15} />) : <Moon size={15} />}
+              </button>
+              <Link href="/admin" className="cta-capsule hidden md:inline-flex">
+                <span className="cta-label">{t.nav.admin}</span>
+                <span className="arrow-circle">
+                  <ArrowUpRight size={16} />
+                </span>
+              </Link>
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--panel-2)] lg:hidden"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </div>
+          </motion.header>
+        </div>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              className="fixed inset-0 z-[90] lg:hidden"
+              role="dialog"
+              aria-modal="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <button
+                type="button"
+                className="absolute inset-0 bg-black/70"
+                aria-label={t.nav.closeMenu}
+                onClick={() => setMenuOpen(false)}
+              />
+              <motion.div
+                className="absolute inset-x-3 top-[5.5rem] overflow-hidden rounded-[28px] bg-[var(--panel)] p-4 text-[var(--text)] shadow-2xl sm:inset-x-5"
+                initial={reduced ? false : { y: -16, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -12, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 340, damping: 32 }}
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold">{t.nav.menu}</p>
+                  <LanguageSwitcher compact variant="nav" />
+                </div>
+                <nav className="grid gap-1" aria-label={t.nav.mobileMenu}>
+                  {publicNav.map((item, index) => {
+                    const active = currentSection === item.id;
+                    return (
+                      <motion.button
+                        key={item.id}
+                        type="button"
+                        onClick={() => goNav(item)}
+                        initial={reduced ? false : { opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.04 * index }}
+                        className={cn(
+                          "flex min-h-12 items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-semibold",
+                          active
+                            ? "bg-[var(--accent)] text-white"
+                            : "text-[var(--text)] hover:bg-[var(--panel-2)]"
+                        )}
+                      >
+                        {item.label}
+                        <ArrowUpRight size={16} />
+                      </motion.button>
+                    );
+                  })}
+                  <Link
+                    href="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className="cta-capsule mt-2"
+                  >
+                    <span className="cta-label flex-1 justify-center">{t.nav.admin}</span>
+                    <span className="arrow-circle">
+                      <ArrowUpRight size={16} />
+                    </span>
+                  </Link>
+                </nav>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="pb-8 pt-2 lg:pb-12">{children}</div>
+        <SiteFooter />
+      </div>
     </div>
   );
 }

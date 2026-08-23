@@ -2,39 +2,47 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import {
-  ArrowRight,
-  Clock3,
+  ArrowUpRight,
   Headphones,
   PackageCheck,
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ItemCard } from "@/components/ItemCard";
 import { OperatorCard } from "@/components/OperatorCard";
 import { WarehouseRegionButtons } from "@/components/WarehouseRegionButtons";
 import { GuestServicesBanner } from "@/components/GuestServicesBanner";
 import { HashScroll } from "@/components/HashScroll";
 import { useLocale } from "@/components/LocaleProvider";
+import { CountUp } from "@/components/ui/CountUp";
+import { Reveal } from "@/components/ui/Reveal";
+import { cn } from "@/lib/utils";
 
-type Item = React.ComponentProps<typeof ItemCard>["item"] & { id: string; category: string };
-type Operator = React.ComponentProps<typeof OperatorCard>["operator"] & { id: string };
+type Item = React.ComponentProps<typeof ItemCard>["item"] & {
+  id: string;
+  category: string;
+};
+type Operator = React.ComponentProps<typeof OperatorCard>["operator"] & {
+  id: string;
+};
 
 const channelMeta = [
   {
     id: "logistika",
     image:
-      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1400&q=80",
     href: "https://t.me/DEXTRANSWORLDWIDE",
-    ctaClass: "bg-[var(--brand-teal)] text-white",
     avatar: "/channels/logistika.jpg",
+    featured: true,
   },
   {
     id: "foto-video",
     image:
       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80",
     href: "https://t.me/dextransworld",
-    ctaClass: "bg-[var(--brand-navy)] text-white",
     avatar: "/channels/foto-video.jpg",
   },
   {
@@ -42,7 +50,6 @@ const channelMeta = [
     image:
       "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=900&q=80",
     href: "https://t.me/DEXTRANS_TEXTIL_PRINT",
-    ctaClass: "bg-[var(--brand-teal-dark)] text-white",
     avatar: "/channels/textil.jpg",
   },
   {
@@ -50,7 +57,6 @@ const channelMeta = [
     image:
       "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80",
     href: "https://t.me/dex_cars",
-    ctaClass: "bg-[var(--brand-navy)] text-white",
     avatar: "/channels/dex-car.jpg",
   },
   {
@@ -58,11 +64,13 @@ const channelMeta = [
     image:
       "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=900&q=80",
     href: "/admin",
-    ctaClass: "bg-[var(--brand-teal)] text-white",
     avatar: null as string | null,
     internal: true,
   },
 ] as const;
+
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2200&q=85";
 
 export function HomePublicContent({
   warehouseCount,
@@ -79,7 +87,12 @@ export function HomePublicContent({
   operators: Operator[];
   guestBannerUrl: string;
 }) {
-  const { t, format } = useLocale();
+  const { t } = useLocale();
+  const reduced = useReducedMotion();
+  const [cargoTab, setCargoTab] = useState<"NEW" | "IN_TRANSIT" | "ARRIVED">(
+    "NEW"
+  );
+  const [hoveredChannel, setHoveredChannel] = useState<string | null>(null);
 
   const categoryCards = channelMeta.map((card) => {
     if (card.id === "logistika") {
@@ -122,15 +135,14 @@ export function HomePublicContent({
     };
   });
 
+  const featured = categoryCards.find((c) => "featured" in c && c.featured)!;
+  const channelRows = categoryCards.filter((c) => c.id !== featured.id);
+
   const values = [
-    { icon: ShieldCheck, title: t.values.safetyTitle, text: t.values.safetyText },
-    { icon: Zap, title: t.values.fastTitle, text: t.values.fastText },
-    {
-      icon: PackageCheck,
-      title: t.values.warehouseTitle,
-      text: t.values.warehouseText,
-    },
-    { icon: Headphones, title: t.values.helpTitle, text: t.values.helpText },
+    { num: "01", icon: ShieldCheck, title: t.values.safetyTitle, text: t.values.safetyText },
+    { num: "02", icon: Zap, title: t.values.fastTitle, text: t.values.fastText },
+    { num: "03", icon: PackageCheck, title: t.values.warehouseTitle, text: t.values.warehouseText },
+    { num: "04", icon: Headphones, title: t.values.helpTitle, text: t.values.helpText },
   ];
 
   const cargoSections = [
@@ -139,293 +151,339 @@ export function HomePublicContent({
     { id: "arrived", category: "ARRIVED" as const },
   ];
 
-  const stats = [
-    { icon: PackageCheck, value: "1250+", label: t.home.delivered },
-    { icon: ShieldCheck, value: "98%", label: t.home.happyClients },
-    { icon: Clock3, value: "24/7", label: t.home.support },
-  ];
+  const activeCargo = useMemo(
+    () => items.filter((item) => item.category === cargoTab),
+    [cargoTab, items]
+  );
+
+  const headline = ["DEXTRANS", "GROUP", "CARGO"] as const;
 
   return (
-    <div className="space-y-16 pb-6">
+    <div>
       <HashScroll />
 
-      <section id="home" className="scroll-mt-24 space-y-6">
-        <div className="relative overflow-hidden rounded-[22px] border border-border bg-card shadow-[0_25px_60px_-40px_rgba(8,32,64,0.45)] sm:rounded-[28px]">
-          <div className="absolute inset-0">
+      {/* HERO */}
+      <section id="home" className="canvas-pad scroll-mt-28 pt-6 sm:pt-10 lg:pt-12">
+        <div className="grid gap-8 lg:grid-cols-[1.35fr_0.75fr] lg:items-end lg:gap-12">
+          <h1 className="max-w-[11ch] text-[clamp(2.75rem,7.5vw,5.75rem)] font-medium leading-[1.02] tracking-[-0.04em] text-[var(--text)]">
+            {headline.map((line, index) => (
+              <motion.span
+                key={line}
+                className="block overflow-visible"
+                initial={reduced ? false : { y: "110%", opacity: 0 }}
+                animate={{ y: "0%", opacity: 1 }}
+                transition={{ delay: 0.12 + index * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {line}
+              </motion.span>
+            ))}
+          </h1>
+
+          <motion.div
+            className="max-w-md space-y-5 lg:justify-self-end lg:pb-2"
+            initial={reduced ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.5 }}
+          >
+            <p className="text-[15px] leading-relaxed text-[var(--muted)]">
+              {t.home.heroText}
+            </p>
+            <a href="#cargo" className="cta-capsule cta-capsule-orange group inline-flex">
+              <span className="cta-label">{t.home.ctaCargo}</span>
+              <span className="arrow-circle arrow-circle-light">
+                <ArrowUpRight size={16} />
+              </span>
+            </a>
+          </motion.div>
+        </div>
+
+        <div className="relative mt-10 sm:mt-14 lg:mt-16">
+          <motion.div
+            className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9]"
+            initial={reduced ? false : { clipPath: "inset(100% 0 0 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            transition={{ delay: 0.28, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          >
             <Image
-              src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1800&q=80"
+              src={HERO_IMAGE}
               alt="Dextrans logistics"
               fill
               priority
-              className="object-cover object-[center_35%] sm:object-center"
-              sizes="100vw"
+              className="object-cover object-center brightness-[0.72] contrast-[1.05]"
+              sizes="(max-width:1500px) 100vw, 1500px"
               unoptimized
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[var(--brand-navy)] via-[var(--brand-navy)]/94 to-[var(--brand-navy)]/88 sm:bg-gradient-to-r sm:from-[var(--brand-navy)] sm:via-[var(--brand-navy)]/92 sm:to-[var(--brand-teal)]/35" />
-          </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+          </motion.div>
 
-          <div className="relative grid gap-6 p-4 sm:p-6 md:p-8 lg:grid-cols-[1.35fr_0.75fr] lg:p-10">
-            <div className="min-w-0 max-w-2xl space-y-4 sm:space-y-5">
-              <Image
-                src="/brand/logo-worldwide.png"
-                alt="dextrans Worldwide"
-                width={240}
-                height={88}
-                priority
-                className="h-11 w-auto max-w-[min(200px,70vw)] sm:h-14 sm:max-w-[240px]"
-              />
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-xs sm:tracking-[0.24em]">
-                {t.home.tagline}
+          <div className="relative z-10 -mt-10 grid gap-3 sm:-mt-14 sm:grid-cols-2 sm:gap-4 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:w-[min(520px,48%)] lg:translate-y-1/3">
+            <motion.div
+              className="folder-card bg-[var(--accent)] p-5 text-white sm:p-6"
+              initial={reduced ? false : { opacity: 0, y: 36 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55, duration: 0.55 }}
+            >
+              <p className="text-sm text-white/80">{t.home.delivered}</p>
+              <p className="mt-3 text-[clamp(2.5rem,5vw,3.75rem)] font-medium leading-none tracking-tight">
+                <CountUp value="1250+" />
               </p>
-              <h1
-                className="font-black leading-[1.08] tracking-tight text-white text-balance"
-                style={{ fontSize: "clamp(1.75rem, 6.5vw, 3.5rem)" }}
-              >
-                DEXTRANS GROUP
-                <br />
-                <span className="text-[var(--accent)]">CARGO</span>
-              </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-white/75 md:text-base">
-                {t.home.heroText}
+            </motion.div>
+            <motion.div
+              className="folder-card bg-[var(--cream)] p-5 text-[#111] sm:p-6"
+              initial={reduced ? false : { opacity: 0, y: 36 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.68, duration: 0.55 }}
+            >
+              <p className="text-sm text-[#111]/60">{t.home.happyClients}</p>
+              <p className="mt-3 text-[clamp(2.5rem,5vw,3.75rem)] font-medium leading-none tracking-tight">
+                <CountUp value="98%" />
               </p>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href="#cargo"
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--brand-teal)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/25 sm:w-auto"
-                >
-                  {t.home.ctaCargo}
-                </a>
-                <a
-                  href="#warehouses"
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur sm:w-auto"
-                >
-                  {t.home.ctaWarehouses}
-                </a>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3">
-                {stats.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.label}
-                      className="min-w-0 rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm backdrop-blur last:col-span-2 sm:last:col-span-1"
-                    >
-                      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-teal)] text-white">
-                        <Icon size={16} />
-                      </div>
-                      <p className="text-lg font-black text-white sm:text-xl">
-                        {item.value}
-                      </p>
-                      <p className="break-words text-[11px] text-white/65">
-                        {item.label}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex items-end justify-stretch lg:justify-end">
-              <div className="w-full max-w-none rounded-[24px] border border-white/20 bg-[var(--brand-navy-deep)]/85 p-4 text-white shadow-2xl backdrop-blur-xl sm:p-5 lg:max-w-sm">
-                <p className="mb-4 text-sm font-bold">{t.home.quickMenu}</p>
-                <div className="space-y-3">
-                  <a
-                    href="#warehouses"
-                    className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg">
-                      🇨🇳
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">{t.home.chinaWarehouses}</p>
-                      <p className="text-xs text-white/70">
-                        {format(t.home.addressesCount, { n: warehouseCount })}
-                      </p>
-                    </div>
-                  </a>
-                  <a
-                    href="#warehouses"
-                    className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg">
-                      🇺🇿
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">
-                        {t.home.tashkentWarehouses}
-                      </p>
-                      <p className="text-xs text-white/70">{t.home.managedByAdmin}</p>
-                    </div>
-                  </a>
-                </div>
-              </div>
-            </div>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#111]/45">
+                {t.home.support} · 24/7
+              </p>
+            </motion.div>
           </div>
         </div>
+        <div className="hidden h-16 lg:block" aria-hidden />
+      </section>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {categoryCards.map((card) => {
-            const inner = (
-              <>
-                <div className="flex min-w-0 items-start justify-between gap-3 p-4 pb-2">
-                  <div className="min-w-0">
-                    <h3 className="break-words text-[15px] font-bold leading-snug text-[var(--brand-ink)] dark:text-foreground">
+      {/* CHANNELS */}
+      <section className="canvas-pad section-space">
+        <Reveal>
+          <h2 className="section-title max-w-[10ch]">{t.channels.openChannel}</h2>
+        </Reveal>
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+          <Reveal>
+            {"internal" in featured && featured.internal ? (
+              <Link href={featured.href} className="group relative block aspect-[4/5] overflow-hidden sm:aspect-[5/4] lg:aspect-auto lg:min-h-[520px]">
+                <Image
+                  src={featured.image}
+                  alt={featured.title}
+                  fill
+                  className="object-cover transition duration-700 group-hover:scale-105"
+                  sizes="50vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                  <p className="text-sm text-white/60">{featured.cta}</p>
+                  <div className="mt-2 flex items-end justify-between gap-4">
+                    <h3 className="max-w-[14ch] text-3xl font-medium tracking-tight text-white sm:text-4xl">
+                      {featured.title}
+                    </h3>
+                    <span className="arrow-circle">
+                      <ArrowUpRight size={18} />
+                    </span>
+                  </div>
+                  <p className="mt-3 max-w-md text-sm text-white/65">{featured.description}</p>
+                </div>
+              </Link>
+            ) : (
+              <a
+                href={featured.href}
+                target="_blank"
+                rel="noreferrer"
+                className="group relative block aspect-[4/5] overflow-hidden sm:aspect-[5/4] lg:aspect-auto lg:min-h-[520px]"
+              >
+                <Image
+                  src={featured.image}
+                  alt={featured.title}
+                  fill
+                  className="object-cover transition duration-700 group-hover:scale-105"
+                  sizes="50vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                  <p className="text-sm text-white/60">{featured.cta}</p>
+                  <div className="mt-2 flex items-end justify-between gap-4">
+                    <h3 className="max-w-[14ch] text-3xl font-medium tracking-tight text-white sm:text-4xl">
+                      {featured.title}
+                    </h3>
+                    <span className="arrow-circle">
+                      <ArrowUpRight size={18} />
+                    </span>
+                  </div>
+                  <p className="mt-3 max-w-md text-sm text-white/65">{featured.description}</p>
+                </div>
+              </a>
+            )}
+          </Reveal>
+
+          <div className="flex flex-col justify-center">
+            {channelRows.map((card, index) => {
+              const active = hoveredChannel === card.id;
+              const row = (
+                <div
+                  className="group relative flex items-center gap-4 border-b border-white/10 py-6 transition"
+                  onMouseEnter={() => setHoveredChannel(card.id)}
+                  onMouseLeave={() => setHoveredChannel(null)}
+                >
+                  <span
+                    className={cn(
+                      "absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--accent)] transition",
+                      active ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="min-w-0 flex-1 pl-3">
+                    <h3 className="text-xl font-medium tracking-tight text-[var(--text)] sm:text-2xl">
                       {card.title}
                     </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-muted">
+                    <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
                       {card.description}
                     </p>
                   </div>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-[var(--brand-teal)] shadow-sm">
-                    <ArrowRight size={14} />
-                  </span>
-                </div>
-                <div className="relative mx-4 mb-3 aspect-[5/4] overflow-hidden rounded-2xl bg-[var(--shell-bg)]">
-                  <Image
-                    src={card.image}
-                    alt={card.title}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                    sizes="(max-width:768px) 100vw, 20vw"
-                    unoptimized
-                  />
-                  {card.avatar && (
-                    <span className="absolute bottom-3 left-3 h-12 w-12 overflow-hidden rounded-2xl border-2 border-white shadow-lg">
-                      <Image
-                        src={card.avatar}
-                        alt={t.home.channelProfile}
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
-                      />
-                    </span>
-                  )}
-                </div>
-                <div className="px-4 pb-4">
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold ${card.ctaClass}`}
-                  >
-                    {card.cta}
-                  </span>
-                </div>
-              </>
-            );
-
-            const className =
-              "group flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(8,32,64,0.45)]";
-
-            if ("internal" in card && card.internal) {
-              return (
-                <Link key={card.id} href={card.href} className={className}>
-                  {inner}
-                </Link>
-              );
-            }
-
-            return (
-              <a
-                key={card.id}
-                href={card.href}
-                target="_blank"
-                rel="noreferrer"
-                className={className}
-              >
-                {inner}
-              </a>
-            );
-          })}
-        </div>
-
-        <div className="overflow-hidden rounded-[24px] border border-border bg-card shadow-sm">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-            {values.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.title}
-                  className={`flex items-center gap-3 px-5 py-5 ${
-                    index < values.length - 1
-                      ? "border-b border-border sm:border-b-0 lg:border-r"
-                      : ""
-                  }`}
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]">
-                    <Icon size={20} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-[var(--brand-ink)] dark:text-foreground">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-muted">{item.text}</p>
+                  <div className="relative hidden h-16 w-24 overflow-hidden opacity-0 transition group-hover:opacity-100 sm:block">
+                    <Image src={card.image} alt="" fill className="object-cover" unoptimized />
                   </div>
+                  <span className="arrow-circle">
+                    <ArrowUpRight size={16} />
+                  </span>
                 </div>
+              );
+
+              return (
+                <Reveal key={card.id} delay={index * 0.06}>
+                  {"internal" in card && card.internal ? (
+                    <Link href={card.href}>{row}</Link>
+                  ) : (
+                    <a href={card.href} target="_blank" rel="noreferrer">
+                      {row}
+                    </a>
+                  )}
+                </Reveal>
               );
             })}
           </div>
         </div>
       </section>
 
+      {/* VALUES */}
+      <section className="canvas-pad section-space pt-0">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {values.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Reveal key={item.num} delay={index * 0.08}>
+                <div className="group folder-card bg-[var(--panel)] p-6 transition hover:bg-[var(--panel-2)] sm:min-h-[280px] sm:p-7">
+                  <div className="mb-10 h-1.5 w-10 bg-transparent transition group-hover:bg-[var(--accent)]" />
+                  <p className="text-sm text-[var(--muted)]">{item.num}</p>
+                  <div className="mt-8 flex h-11 w-11 items-center justify-center bg-[var(--panel-2)] text-[var(--text)] transition group-hover:bg-[var(--accent)] group-hover:text-white">
+                    <Icon size={20} />
+                  </div>
+                  <h3 className="mt-6 text-xl font-medium tracking-tight text-[var(--text)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{item.text}</p>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
       <GuestServicesBanner bannerSrc={guestBannerUrl} />
 
-      <section id="cargo" className="scroll-mt-24 space-y-8">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold sm:text-3xl">{t.home.cargoTitle}</h2>
-          <p className="max-w-2xl text-muted">{t.home.cargoSubtitle}</p>
-        </div>
-        {cargoSections.map((section) => {
-          const list = items.filter((item) => item.category === section.category);
-          return (
-            <div key={section.id} className="space-y-4">
-              <div>
-                <h3 className="text-2xl font-bold">
+      {/* CARGO */}
+      <section id="cargo" className="canvas-pad section-space scroll-mt-28">
+        <Reveal className="max-w-3xl space-y-4">
+          <h2 className="section-title">{t.home.cargoTitle}</h2>
+          <p className="max-w-xl text-[var(--muted)]">{t.home.cargoSubtitle}</p>
+        </Reveal>
+
+        <Reveal className="mt-10">
+          <div className="flex flex-wrap gap-0 border-b border-white/10">
+            {cargoSections.map((section) => {
+              const count = items.filter((item) => item.category === section.category).length;
+              const active = cargoTab === section.category;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setCargoTab(section.category)}
+                  className={cn(
+                    "relative px-4 py-4 text-sm font-semibold transition sm:px-6",
+                    active ? "text-[var(--accent)]" : "text-[var(--muted)] hover:text-[var(--text)]"
+                  )}
+                >
                   {t.categories[section.category]}
-                </h3>
-                <p className="text-sm text-muted">
-                  {format(t.home.itemsCount, { n: list.length })}
+                  <span className="ml-2 text-xs opacity-60">({count})</span>
+                  {active && (
+                    <motion.span
+                      layoutId={reduced ? undefined : "cargo-underline"}
+                      className="absolute inset-x-4 bottom-0 h-0.5 bg-[var(--accent)] sm:inset-x-6"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Reveal>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={cargoTab}
+            className="mt-10"
+            initial={reduced ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+          >
+            {activeCargo.length ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {activeCargo.map((item, index) => (
+                  <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
+                    <ItemCard item={item} />
+                  </Reveal>
+                ))}
+              </div>
+            ) : (
+              <div className="py-20">
+                <div className="mb-6 h-px w-24 bg-[var(--accent)]" />
+                <p className="text-3xl font-medium tracking-tight text-[var(--text)] sm:text-4xl">
+                  {t.home.noItems}
                 </p>
               </div>
-              {list.length ? (
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {list.map((item) => (
-                    <ItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="card p-6 text-muted">{t.home.noItems}</div>
-              )}
-            </div>
-          );
-        })}
+            )}
+          </motion.div>
+        </AnimatePresence>
       </section>
 
-      <section id="warehouses" className="scroll-mt-24 space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold sm:text-3xl">{t.home.warehousesTitle}</h2>
-          <p className="max-w-2xl text-muted">{t.home.warehousesSubtitle}</p>
-        </div>
-        <WarehouseRegionButtons
-          chinaCount={chinaCount}
-          tashkentCount={tashkentCount}
-        />
+      {/* WAREHOUSES */}
+      <section id="warehouses" className="canvas-pad section-space scroll-mt-28 pt-0">
+        <Reveal className="mb-12 max-w-3xl space-y-4">
+          <h2 className="section-title">{t.home.warehousesTitle}</h2>
+          <p className="max-w-xl text-[var(--muted)]">{t.home.warehousesSubtitle}</p>
+          <p className="text-sm text-[var(--muted)]">
+            {warehouseCount} · CN hub
+          </p>
+        </Reveal>
+        <WarehouseRegionButtons chinaCount={chinaCount} tashkentCount={tashkentCount} />
       </section>
 
-      <section id="operators" className="scroll-mt-24 space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-black tracking-tight text-[var(--brand-ink)] dark:text-foreground sm:text-3xl">
-            {t.home.operatorsTitle}
-          </h2>
-          <p className="max-w-2xl text-sm text-muted">{t.home.operatorsSubtitle}</p>
-        </div>
+      {/* OPERATORS */}
+      <section id="operators" className="canvas-pad section-space scroll-mt-28">
+        <Reveal className="mb-12 max-w-3xl space-y-4">
+          <h2 className="section-title">{t.home.operatorsTitle}</h2>
+          <p className="max-w-xl text-sm text-[var(--muted)]">{t.home.operatorsSubtitle}</p>
+        </Reveal>
+
         {operators.length ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {operators.map((operator) => (
-              <OperatorCard key={operator.id} operator={operator} />
+            {operators.map((operator, index) => (
+              <Reveal key={operator.id} delay={Math.min(index * 0.05, 0.2)}>
+                <OperatorCard operator={operator} />
+              </Reveal>
             ))}
           </div>
         ) : (
-          <div className="card p-6 text-muted">{t.home.noOperators}</div>
+          <div className="py-16">
+            <div className="mb-6 h-px w-24 bg-[var(--accent)]" />
+            <p className="text-3xl font-medium tracking-tight text-[var(--text)]">
+              {t.home.noOperators}
+            </p>
+          </div>
         )}
       </section>
     </div>

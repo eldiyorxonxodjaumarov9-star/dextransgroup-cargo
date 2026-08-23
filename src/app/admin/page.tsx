@@ -21,29 +21,34 @@ export default async function AdminPage() {
     ]);
 
   const cards = [
-    { label: "Jami tovarlar", value: items, href: "/admin/items" },
-    { label: "Yangi", value: newCount, href: "/admin/items" },
-    { label: "Yo‘lda", value: transitCount, href: "/admin/items" },
-    { label: "Kelgan", value: arrivedCount, href: "/admin/items" },
-    { label: "Omborlar", value: warehouses, href: "/admin/warehouses" },
-    { label: "Operatorlar", value: operators, href: "/admin/operators" },
+    { label: "Jami tovarlar", value: items, href: "/admin/items", tone: "from-teal-500/20 to-cyan-500/10" },
+    { label: "Yangi", value: newCount, href: "/admin/items", tone: "from-violet-500/20 to-fuchsia-500/10" },
+    { label: "Yo‘lda", value: transitCount, href: "/admin/items", tone: "from-sky-500/20 to-blue-500/10" },
+    { label: "Kelgan", value: arrivedCount, href: "/admin/items", tone: "from-emerald-500/20 to-teal-500/10" },
+    { label: "Omborlar", value: warehouses, href: "/admin/warehouses", tone: "from-amber-500/20 to-orange-500/10" },
+    { label: "Operatorlar", value: operators, href: "/admin/operators", tone: "from-cyan-500/20 to-teal-500/10" },
   ];
 
   return (
     <div className="space-y-4">
       <AdminNav username={session.username} />
       <div className="mb-6">
-        <h1 className="text-2xl font-bold sm:text-3xl">Boshqaruv paneli</h1>
-        <p className="text-muted">
+        <p className="section-kicker mb-2">Control center</p>
+        <h1 className="section-title">Boshqaruv paneli</h1>
+        <p className="mt-2 text-muted">
           Tovarlar, omborlar, operatorlar va hisobotlarni shu yerdan boshqaring.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
-          <Link key={card.label} href={card.href} className="card p-5 hover:border-primary">
+          <Link
+            key={card.label}
+            href={card.href}
+            className={`premium-hover relative overflow-hidden rounded-[1.35rem] border border-border bg-gradient-to-br ${card.tone} p-5`}
+          >
             <p className="text-sm text-muted">{card.label}</p>
-            <p className="mt-2 text-3xl font-bold">{card.value}</p>
+            <p className="mt-2 text-3xl font-black tracking-tight">{card.value}</p>
           </Link>
         ))}
       </div>

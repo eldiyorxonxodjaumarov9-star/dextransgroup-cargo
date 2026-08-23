@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ExternalLink, FileText, MapPin, Package } from "lucide-react";
+import { ArrowUpRight, FileText, MapPin, Package } from "lucide-react";
 import { StatusBadge, CategoryBadge } from "./StatusBadge";
 import { useLocale } from "@/components/LocaleProvider";
 import { formatDate } from "@/lib/utils";
@@ -33,89 +33,31 @@ export function ItemCard({ item }: ItemCardProps) {
   const { t } = useLocale();
   const isPdf = item.entryType === "PDF" && Boolean(item.pdfUrl);
 
-  if (isPdf) {
-    return (
-      <article className="card min-w-0 overflow-hidden">
-        <div className="relative aspect-[16/10] bg-background">
-          {item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              fill
-              className="object-cover"
-              sizes="(max-width:768px) 100vw, 33vw"
-              unoptimized
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted">
-              <FileText size={36} className="text-[var(--brand-teal)]" />
-              <span className="text-xs">{t.item.pdfDoc}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-3 p-4">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="break-words text-lg font-semibold">{item.name}</h3>
-              <p className="break-all text-sm text-muted">{item.trackNumber}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <CategoryBadge category={item.category} />
-              <StatusBadge status={item.status} />
-            </div>
-          </div>
-
-          <p className="flex min-w-0 items-start gap-2 break-words text-sm text-muted">
-            <FileText size={15} className="mt-0.5 shrink-0 text-[var(--brand-teal)]" />
-            <span>{item.pdfFileName || t.item.pdfDoc}</span>
-          </p>
-
-          <p className="text-sm">
-            <span className="text-muted">{t.item.date}</span> {formatDate(item.date)}
-          </p>
-
-          {item.notes && (
-            <p className="break-words text-sm text-muted">{item.notes}</p>
-          )}
-
-          <a
-            href={item.pdfUrl!}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-primary w-full text-sm"
-          >
-            {t.item.openPdf} <ExternalLink size={14} />
-          </a>
-        </div>
-      </article>
-    );
-  }
-
   return (
-    <article className="card min-w-0 overflow-hidden">
-      <div className="relative aspect-[16/10] bg-background">
+    <article className="group min-w-0 overflow-hidden bg-[var(--panel)] text-[var(--text)]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--panel-2)]">
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
             alt={item.name}
             fill
-            className="object-cover"
+            className="object-cover transition duration-700 group-hover:scale-105"
             sizes="(max-width:768px) 100vw, 33vw"
             unoptimized
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted">
-            <Package size={36} />
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-[var(--muted)]">
+            {isPdf ? <FileText size={36} /> : <Package size={36} />}
+            {isPdf && <span className="text-xs uppercase tracking-wider">{t.item.pdfDoc}</span>}
           </div>
         )}
       </div>
 
-      <div className="space-y-3 p-4">
+      <div className="space-y-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="break-words text-lg font-semibold">{item.name}</h3>
-            <p className="break-all text-sm text-muted">{item.trackNumber}</p>
+            <h3 className="break-words text-xl font-medium tracking-tight">{item.name}</h3>
+            <p className="mt-1 break-all text-sm text-[var(--muted)]">{item.trackNumber}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <CategoryBadge category={item.category} />
@@ -123,48 +65,68 @@ export function ItemCard({ item }: ItemCardProps) {
           </div>
         </div>
 
-        {item.description && (
-          <p className="break-words text-sm text-muted">{item.description}</p>
+        {isPdf ? (
+          <p className="flex items-start gap-2 text-sm text-[var(--muted)]">
+            <FileText size={15} className="mt-0.5 shrink-0 text-[var(--accent)]" />
+            <span>{item.pdfFileName || t.item.pdfDoc}</span>
+          </p>
+        ) : (
+          item.description && (
+            <p className="break-words text-sm text-[var(--muted)]">{item.description}</p>
+          )
         )}
 
-        <div className="grid gap-1 break-words text-sm">
-          {item.price && (
+        <p className="text-sm text-[var(--muted)]">
+          {t.item.date} {formatDate(item.date)}
+        </p>
+
+        {!isPdf && (
+          <div className="grid gap-1 break-words text-sm text-[var(--muted)]">
+            {item.price && (
+              <p>
+                {t.item.price} {item.price}
+              </p>
+            )}
+            {item.etaDate && (
+              <p>
+                {t.item.eta} {formatDate(item.etaDate)}
+              </p>
+            )}
             <p>
-              <span className="text-muted">{t.item.price}</span> {item.price}
+              {t.item.warehouse} {item.warehouse?.name || "—"}
             </p>
-          )}
-          <p>
-            <span className="text-muted">{t.item.date}</span> {formatDate(item.date)}
-          </p>
-          {item.etaDate && (
             <p>
-              <span className="text-muted">{t.item.eta}</span> {formatDate(item.etaDate)}
+              {t.item.operator}{" "}
+              {item.operator
+                ? `${item.operator.name} (${item.operator.phone})`
+                : "—"}
             </p>
-          )}
-          <p>
-            <span className="text-muted">{t.item.warehouse}</span>{" "}
-            {item.warehouse?.name || "—"}
-          </p>
-          <p>
-            <span className="text-muted">{t.item.operator}</span>{" "}
-            {item.operator
-              ? `${item.operator.name} (${item.operator.phone})`
-              : "—"}
-          </p>
-          {item.chinaAddress && (
-            <p className="break-anywhere">
-              <span className="text-muted">{t.item.chinaAddress}</span>{" "}
-              {item.chinaAddress}
-            </p>
-          )}
-          {item.notes && (
-            <p>
-              <span className="text-muted">{t.item.notes}</span> {item.notes}
-            </p>
-          )}
-        </div>
+            {item.chinaAddress && (
+              <p className="break-anywhere">
+                {t.item.chinaAddress} {item.chinaAddress}
+              </p>
+            )}
+            {item.notes && (
+              <p>
+                {t.item.notes} {item.notes}
+              </p>
+            )}
+          </div>
+        )}
+
+        {item.notes && isPdf && (
+          <p className="break-words text-sm text-[var(--muted)]">{item.notes}</p>
+        )}
 
         <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
+          {isPdf && item.pdfUrl && (
+            <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="cta-capsule cta-capsule-orange group inline-flex">
+              <span className="cta-label">{t.item.openPdf}</span>
+              <span className="arrow-circle arrow-circle-light">
+                <ArrowUpRight size={16} />
+              </span>
+            </a>
+          )}
           {item.telegramUrl && (
             <a
               href={item.telegramUrl}
@@ -172,7 +134,7 @@ export function ItemCard({ item }: ItemCardProps) {
               rel="noreferrer"
               className="btn btn-primary w-full text-sm sm:w-auto"
             >
-              {t.item.telegram} <ExternalLink size={14} />
+              {t.item.telegram}
             </a>
           )}
           {item.locationUrl && (
@@ -180,7 +142,7 @@ export function ItemCard({ item }: ItemCardProps) {
               href={item.locationUrl}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-secondary w-full text-sm sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-4 text-sm font-semibold sm:w-auto"
             >
               <MapPin size={14} /> {t.item.location}
             </a>

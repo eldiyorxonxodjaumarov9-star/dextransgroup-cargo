@@ -33,6 +33,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate locale from localStorage once
       if (isLocale(saved)) setLocaleState(saved);
     } catch {
       /* ignore */

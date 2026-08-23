@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { MapPinned, Warehouse } from "lucide-react";
+import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { Reveal } from "@/components/ui/Reveal";
+import { CountUp } from "@/components/ui/CountUp";
 
 export function WarehouseRegionButtons({
   chinaCount,
@@ -14,50 +17,80 @@ export function WarehouseRegionButtons({
   const { t, format } = useLocale();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Link
-        href="/warehouses/china"
-        className="group flex min-h-[140px] flex-col justify-between rounded-[24px] border border-border bg-card p-5 shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--brand-teal)] hover:shadow-[0_22px_45px_-28px_rgba(8,32,64,0.4)] sm:p-6"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]">
-            <Warehouse size={22} />
-          </span>
-          <span className="text-2xl" aria-hidden>
-            🇨🇳
-          </span>
-        </div>
-        <div>
-          <h3 className="text-xl font-bold text-[var(--brand-ink)] dark:text-foreground">
-            {t.warehouse.chinaTitle}
-          </h3>
-          <p className="mt-1 text-sm text-muted">
-            {format(t.warehouse.chinaHint, { n: chinaCount })}
-          </p>
-        </div>
-      </Link>
+    <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+      <Reveal>
+        <Link
+          href="/warehouses/china"
+          className="group relative flex min-h-[320px] flex-col justify-between overflow-hidden bg-[var(--accent)] p-7 text-white sm:min-h-[380px] sm:p-9"
+        >
+          <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-35">
+            <Image
+              src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80"
+              alt=""
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          <div className="relative flex items-start justify-between">
+            <p className="text-sm text-white/75">CN · REGION</p>
+            <span className="arrow-circle arrow-circle-light">
+              <ArrowUpRight size={16} />
+            </span>
+          </div>
+          <div className="relative space-y-4">
+            <p className="text-[clamp(4rem,10vw,7rem)] font-medium leading-none tracking-tight opacity-30">
+              CN
+            </p>
+            <h3 className="text-3xl font-medium tracking-tight sm:text-4xl">
+              {t.warehouse.chinaTitle}
+            </h3>
+            <p className="text-sm text-white/75">
+              {format(t.warehouse.chinaHint, { n: chinaCount })}
+            </p>
+            <p className="text-[clamp(2.5rem,6vw,4rem)] font-medium leading-none">
+              <CountUp value={String(chinaCount)} />
+            </p>
+          </div>
+        </Link>
+      </Reveal>
 
-      <Link
-        href="/warehouses/tashkent"
-        className="group flex min-h-[140px] flex-col justify-between rounded-[24px] border border-border bg-card p-5 shadow-[0_18px_40px_-30px_rgba(8,32,64,0.35)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--brand-teal)] hover:shadow-[0_22px_45px_-28px_rgba(8,32,64,0.4)] sm:p-6"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-teal-soft)] text-[var(--brand-teal)]">
-            <MapPinned size={22} />
-          </span>
-          <span className="text-2xl" aria-hidden>
-            🇺🇿
-          </span>
-        </div>
-        <div>
-          <h3 className="text-xl font-bold text-[var(--brand-ink)] dark:text-foreground">
-            {t.warehouse.tashkentTitle}
-          </h3>
-          <p className="mt-1 text-sm text-muted">
-            {format(t.warehouse.tashkentHint, { n: tashkentCount })}
-          </p>
-        </div>
-      </Link>
+      <Reveal delay={0.1}>
+        <Link
+          href="/warehouses/tashkent"
+          className="group relative flex min-h-[320px] flex-col justify-between overflow-hidden bg-[var(--cream)] p-7 text-[#111] sm:min-h-[380px] sm:p-9"
+        >
+          <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-25">
+            <Image
+              src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80"
+              alt=""
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          <div className="relative flex items-start justify-between">
+            <p className="text-sm text-[#111]/55">UZ · REGION</p>
+            <span className="arrow-circle">
+              <ArrowUpRight size={16} />
+            </span>
+          </div>
+          <div className="relative space-y-4">
+            <p className="text-[clamp(4rem,10vw,7rem)] font-medium leading-none tracking-tight text-[#111]/15">
+              UZ
+            </p>
+            <h3 className="text-3xl font-medium tracking-tight sm:text-4xl">
+              {t.warehouse.tashkentTitle}
+            </h3>
+            <p className="text-sm text-[#111]/55">
+              {format(t.warehouse.tashkentHint, { n: tashkentCount })}
+            </p>
+            <p className="text-[clamp(2.5rem,6vw,4rem)] font-medium leading-none">
+              <CountUp value={String(tashkentCount)} />
+            </p>
+          </div>
+        </Link>
+      </Reveal>
     </div>
   );
 }
