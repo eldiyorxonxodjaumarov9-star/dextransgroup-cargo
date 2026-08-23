@@ -58,7 +58,7 @@ export function WarehouseRegionButtons({
       <Reveal delay={0.1}>
         <Link
           href="/warehouses/tashkent"
-          className="group relative flex min-h-[280px] flex-col justify-between overflow-hidden bg-[var(--cream)] p-5 text-[#111] sm:min-h-[380px] sm:p-9"
+          className="group relative flex min-h-[280px] flex-col justify-between overflow-hidden on-cream p-5 sm:min-h-[380px] sm:p-9"
         >
           <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-25">
             <Image
@@ -70,19 +70,19 @@ export function WarehouseRegionButtons({
             />
           </div>
           <div className="relative flex items-start justify-between">
-            <p className="text-sm text-[#111]/55">UZ · REGION</p>
+            <p className="cream-muted text-sm">UZ · REGION</p>
             <span className="arrow-circle">
               <ArrowUpRight size={16} />
             </span>
           </div>
           <div className="relative space-y-4">
-            <p className="text-[clamp(3rem,18vw,7rem)] font-medium leading-none tracking-tight text-[#111]/15">
+            <p className="cream-faint text-[clamp(3rem,18vw,7rem)] font-medium leading-none tracking-tight">
               UZ
             </p>
             <h3 className="break-words text-2xl font-medium tracking-tight sm:text-4xl">
               {t.warehouse.tashkentTitle}
             </h3>
-            <p className="text-sm text-[#111]/55">
+            <p className="cream-muted text-sm">
               {format(t.warehouse.tashkentHint, { n: tashkentCount })}
             </p>
             <p className="text-[clamp(2.5rem,6vw,4rem)] font-medium leading-none">

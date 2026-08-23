@@ -228,16 +228,16 @@ export function HomePublicContent({
               </p>
             </motion.div>
             <motion.div
-              className="folder-card bg-[var(--cream)] p-4 text-[#111] sm:p-6"
+              className="folder-card on-cream p-4 sm:p-6"
               initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55, duration: 0.5 }}
             >
-              <p className="break-words text-sm text-[#111]/60">{t.home.happyClients}</p>
+              <p className="cream-muted break-words text-sm">{t.home.happyClients}</p>
               <p className="mt-3 text-[clamp(2.1rem,8vw,3.75rem)] font-medium leading-none tracking-tight">
                 <CountUp value="98%" />
               </p>
-              <p className="mt-3 break-words text-xs font-semibold uppercase tracking-[0.16em] text-[#111]/45 sm:mt-4">
+              <p className="cream-muted mt-3 break-words text-xs font-semibold uppercase tracking-[0.16em] sm:mt-4">
                 {t.home.support} · 24/7
               </p>
             </motion.div>
@@ -313,7 +313,7 @@ export function HomePublicContent({
           <div className="flex flex-col justify-center">
             {channelRows.map((card, index) => {
               const row = (
-                <div className="group relative flex items-center gap-3 border-b border-white/10 py-5 transition sm:gap-4 sm:py-6">
+                <div className="group relative flex items-center gap-3 border-b border-[var(--border)] py-5 transition sm:gap-4 sm:py-6">
                   <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--accent)] opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" />
                   <div className="min-w-0 flex-1 pl-3">
                     <h3 className="break-words text-lg font-medium tracking-tight text-[var(--text)] sm:text-2xl">
@@ -382,7 +382,7 @@ export function HomePublicContent({
         </Reveal>
 
         <Reveal className="mt-8 w-full min-w-0 max-w-full sm:mt-10">
-          <div className="tabs-scroll border-b border-white/10">
+          <div className="tabs-scroll border-b border-[var(--border)]">
             {cargoSections.map((section) => {
               const count = items.filter((item) => item.category === section.category).length;
               const active = cargoTab === section.category;

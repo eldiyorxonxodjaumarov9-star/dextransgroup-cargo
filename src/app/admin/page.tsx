@@ -45,10 +45,10 @@ export default async function AdminPage() {
           <Link
             key={card.label}
             href={card.href}
-            className={`premium-hover relative overflow-hidden rounded-[1.35rem] border border-border bg-gradient-to-br ${card.tone} p-5`}
+            className={`premium-hover relative overflow-hidden rounded-[1.35rem] border border-border bg-gradient-to-br ${card.tone} p-5 text-[var(--text)]`}
           >
-            <p className="text-sm text-muted">{card.label}</p>
-            <p className="mt-2 text-3xl font-black tracking-tight">{card.value}</p>
+            <p className="text-sm text-[var(--muted)]">{card.label}</p>
+            <p className="mt-2 text-3xl font-black tracking-tight text-[var(--text)]">{card.value}</p>
           </Link>
         ))}
       </div>

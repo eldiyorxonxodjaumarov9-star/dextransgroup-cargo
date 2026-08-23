@@ -60,7 +60,7 @@ export function OperatorCard({ operator }: OperatorCardProps) {
             target="_blank"
             rel="noreferrer"
             title={operator.telegram || undefined}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-[#111] transition hover:bg-[var(--cream)]"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-[#111] transition hover:bg-[var(--cream)] hover:text-[var(--cream-fg)]"
           >
             <Send size={15} />
             <span className="break-all">{operator.telegram}</span>

@@ -161,7 +161,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="site-frame">
       <div className="site-canvas">
         {/* Mobile compact header */}
-        <header className="sticky top-0 z-[80] box-border w-full max-w-full border-b border-white/10 bg-[var(--canvas)]/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
+        <header className="sticky top-0 z-[80] box-border w-full max-w-full border-b border-[var(--border)] bg-[var(--canvas)]/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
           <div className="flex min-h-11 w-full min-w-0 max-w-full items-center gap-1.5">
             <button
               type="button"
@@ -281,13 +281,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setMenuOpen(false)}
               />
               <motion.div
-                className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[var(--panel)] text-[var(--text)] shadow-2xl safe-bottom"
+                className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[28px] border border-[var(--border)] bg-[var(--panel)] text-[var(--text)] shadow-2xl safe-bottom"
                 initial={reduced ? false : { y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", stiffness: 340, damping: 34 }}
               >
-                <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4">
+                <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4">
                   <p className="min-w-0 text-sm font-semibold">{t.nav.menu}</p>
                   <div className="flex shrink-0 items-center gap-2">
                     <button

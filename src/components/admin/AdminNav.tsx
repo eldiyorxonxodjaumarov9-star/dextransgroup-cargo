@@ -140,7 +140,7 @@ export function AdminNav({ username }: { username: string }) {
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 360, damping: 34 }}
             >
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4">
                 <p className="text-sm font-semibold">Admin menu</p>
                 <button
                   type="button"

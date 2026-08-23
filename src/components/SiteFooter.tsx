@@ -33,7 +33,7 @@ export function SiteFooter() {
   ];
 
   return (
-    <footer className="mt-8 w-full min-w-0 max-w-full border-t border-white/10 bg-[var(--canvas)] text-[var(--text)] safe-bottom">
+    <footer className="mt-8 w-full min-w-0 max-w-full border-t border-[var(--border)] bg-[var(--canvas)] text-[var(--text)] safe-bottom">
       <div className="canvas-pad py-12 sm:py-20 lg:py-24">
         <div className="grid w-full min-w-0 grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-6 sm:space-y-8">
@@ -98,10 +98,10 @@ export function SiteFooter() {
                 { key: "contact" as const, title: t.footer.contact, items: contacts },
               ] as const
             ).map((block) => (
-              <div key={block.key} className="border border-white/10">
+              <div key={block.key} className="border border-[var(--border)]">
                 <button
                   type="button"
-                  className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
+                  className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-[var(--text)]"
                   onClick={() =>
                     setOpen((value) => (value === block.key ? null : block.key))
                   }
@@ -117,7 +117,7 @@ export function SiteFooter() {
                   />
                 </button>
                 {open === block.key && (
-                  <ul className="space-y-1 border-t border-white/10 px-4 py-3 text-sm text-white/70">
+                  <ul className="space-y-1 border-t border-[var(--border)] px-4 py-3 text-sm text-[var(--muted)]">
                     {block.items.map((item) => (
                       <li key={item.href}>
                         {"external" in item && item.external ? (
@@ -125,14 +125,14 @@ export function SiteFooter() {
                             href={item.href}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex min-h-11 items-center break-all"
+                            className="inline-flex min-h-11 items-center break-all text-[var(--text)]/80 transition hover:text-[var(--accent)]"
                           >
                             {item.label}
                           </a>
                         ) : (
                           <Link
                             href={item.href}
-                            className="inline-flex min-h-11 items-center"
+                            className="inline-flex min-h-11 items-center text-[var(--text)]/80 transition hover:text-[var(--accent)]"
                           >
                             {item.label}
                           </Link>
@@ -147,7 +147,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 px-5 py-5 text-center text-xs leading-relaxed text-[var(--muted)] sm:px-10">
+      <div className="border-t border-[var(--border)] px-5 py-5 text-center text-xs leading-relaxed text-[var(--muted)] sm:px-10">
         © {year} Dextrans Group Cargo. {t.footer.rights}
       </div>
     </footer>

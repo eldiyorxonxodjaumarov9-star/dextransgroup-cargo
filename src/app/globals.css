@@ -6,15 +6,24 @@
   --panel: #1b1b1b;
   --panel-2: #242424;
   --text: #f7f7f2;
-  --muted: #8a8a86;
+  --muted: #aaa9a3;
   --cream: #f1f0eb;
+  --cream-fg: #111111;
+  --cream-muted: #5f5f5a;
+  --cream-faint: rgba(17, 17, 17, 0.14);
   --accent: #ff4a0a;
+
+  /* Theme-level semantic surface (page chrome) */
+  --surface-bg: #1b1b1b;
+  --surface-fg: #f7f7f2;
+  --surface-muted: #aaa9a3;
+  --surface-accent: #ff4a0a;
 
   --background: #050505;
   --foreground: #f7f7f2;
   --card: #1b1b1b;
   --card-solid: #1b1b1b;
-  --border: rgba(247, 247, 242, 0.1);
+  --border: rgba(247, 247, 242, 0.12);
   --primary: #ff4a0a;
   --primary-foreground: #ffffff;
   --accent-color: #ff4a0a;
@@ -36,15 +45,24 @@
   --panel: #ffffff;
   --panel-2: #eceae4;
   --text: #111111;
-  --muted: #6b6b66;
+  --muted: #5f5f5a;
+  /* Counter panel: dark plate on light canvas */
   --cream: #1b1b1b;
+  --cream-fg: #f7f7f2;
+  --cream-muted: #aaa9a3;
+  --cream-faint: rgba(247, 247, 242, 0.14);
   --accent: #ff4a0a;
+
+  --surface-bg: #f7f7f2;
+  --surface-fg: #111111;
+  --surface-muted: #5f5f5a;
+  --surface-accent: #ff4a0a;
 
   --background: #f7f7f2;
   --foreground: #111111;
   --card: #ffffff;
   --card-solid: #ffffff;
-  --border: rgba(17, 17, 17, 0.1);
+  --border: rgba(17, 17, 17, 0.12);
   --primary: #ff4a0a;
   --primary-foreground: #ffffff;
   --shell-bg: #ff4a0a;
@@ -61,15 +79,23 @@
   --panel: #1b1b1b;
   --panel-2: #242424;
   --text: #f7f7f2;
-  --muted: #8a8a86;
+  --muted: #aaa9a3;
   --cream: #f1f0eb;
+  --cream-fg: #111111;
+  --cream-muted: #5f5f5a;
+  --cream-faint: rgba(17, 17, 17, 0.14);
   --accent: #ff4a0a;
+
+  --surface-bg: #1b1b1b;
+  --surface-fg: #f7f7f2;
+  --surface-muted: #aaa9a3;
+  --surface-accent: #ff4a0a;
 
   --background: #050505;
   --foreground: #f7f7f2;
   --card: #1b1b1b;
   --card-solid: #1b1b1b;
-  --border: rgba(247, 247, 242, 0.1);
+  --border: rgba(247, 247, 242, 0.12);
   --primary: #ff4a0a;
   --primary-foreground: #ffffff;
   --shell-bg: #ff4a0a;
@@ -432,6 +458,7 @@ button:hover .arrow-circle {
 
 .card {
   background: var(--panel);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: 0;
   min-width: 0;
@@ -464,6 +491,13 @@ button:hover .arrow-circle {
   outline: none;
 }
 
+.field input::placeholder,
+.field select::placeholder,
+.field textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.9;
+}
+
 .field textarea {
   min-height: 5.5rem;
 }
@@ -473,6 +507,52 @@ button:hover .arrow-circle {
 .field textarea:focus {
   border-color: color-mix(in srgb, var(--accent) 70%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/*
+ * Self-contained surfaces: keep their own fg/muted even when nested
+ * inside the opposite global theme.
+ */
+.surface-dark {
+  background-color: #1b1b1b;
+  color: #f7f7f2;
+  --text: #f7f7f2;
+  --muted: #aaa9a3;
+  --border: rgba(247, 247, 242, 0.12);
+}
+
+.surface-light {
+  background-color: #f7f7f2;
+  color: #111111;
+  --text: #111111;
+  --muted: #5f5f5a;
+  --border: rgba(17, 17, 17, 0.12);
+}
+
+/* Cream / counter panel — bg flips with theme; fg always matches */
+.on-cream {
+  background-color: var(--cream);
+  color: var(--cream-fg);
+}
+
+.on-cream .cream-muted {
+  color: var(--cream-muted);
+}
+
+.on-cream .cream-faint {
+  color: var(--cream-faint);
+}
+
+.surface-muted {
+  color: var(--muted);
 }
 
 .badge {

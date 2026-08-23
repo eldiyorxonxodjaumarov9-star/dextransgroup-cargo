@@ -41,7 +41,7 @@ export function GuestServicesBanner({
     <section
       id="guest-services"
       ref={ref}
-      className="scroll-mt-24 overflow-hidden border-y border-white/5 sm:scroll-mt-28"
+      className="scroll-mt-24 overflow-hidden border-y border-[var(--border)] sm:scroll-mt-28"
     >
       <div className="grid w-full min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Reveal className="relative min-h-[260px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[620px]">
@@ -76,7 +76,7 @@ export function GuestServicesBanner({
                 <Reveal key={text} delay={0.1 + index * 0.05}>
                   <li
                     className={cn(
-                      "group flex items-start gap-3 border-b border-white/10 py-4 transition sm:items-center sm:gap-4 sm:py-5",
+                      "group flex items-start gap-3 border-b border-[var(--border)] py-4 transition sm:items-center sm:gap-4 sm:py-5",
                       "sm:hover:pl-1"
                     )}
                   >
