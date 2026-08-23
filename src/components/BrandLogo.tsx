@@ -11,6 +11,11 @@ type BrandLogoProps = {
   priority?: boolean;
 };
 
+/**
+ * Theme keys:
+ * - light → asset for light page backgrounds (dark/navy ink or navy plate)
+ * - dark  → asset for dark page backgrounds (white ink)
+ */
 const variants = {
   cargo: {
     light: "/brand/logo-cargo.png",
@@ -20,11 +25,13 @@ const variants = {
     height: 84,
   },
   worldwide: {
-    light: "/brand/logo-worldwide.png",
+    // Navy plate + white wordmark (includes Worldwide + tagline)
+    light: "/brand/logo-worldwide-navy.png",
+    // Transparent white wordmark for dark canvas
     dark: "/brand/logo-worldwide.png",
-    alt: "dextrans Worldwide",
-    width: 220,
-    height: 80,
+    alt: "dextrans Worldwide — Integrating the Asian Frontier",
+    width: 681,
+    height: 269,
   },
   nav: {
     light: "/brand/logo-worldwide-nav.png",
@@ -56,13 +63,9 @@ export function BrandLogo({
   }, []);
 
   const meta = variants[variant];
-  const isDark = mounted && resolvedTheme === "dark";
-  const src =
-    variant === "worldwide"
-      ? meta.light
-      : isDark
-        ? meta.dark
-        : meta.light;
+  // defaultTheme is dark — prefer dark (white) assets until hydrated
+  const isDark = !mounted || resolvedTheme !== "light";
+  const src = isDark ? meta.dark : meta.light;
 
   return (
     <Image
@@ -72,7 +75,7 @@ export function BrandLogo({
       height={meta.height}
       priority={priority}
       unoptimized
-      className={cn("h-auto w-auto object-contain", className)}
+      className={cn("h-auto max-w-full object-contain", className)}
     />
   );
 }

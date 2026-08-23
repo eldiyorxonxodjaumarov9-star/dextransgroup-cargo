@@ -37,10 +37,12 @@ export function SiteFooter() {
       <div className="canvas-pad py-12 sm:py-20 lg:py-24">
         <div className="grid w-full min-w-0 grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-6 sm:space-y-8">
-            <BrandLogo
-              variant="worldwide"
-              className="h-auto w-auto max-w-[min(240px,100%)]"
-            />
+            <div className="flex justify-center px-5 sm:justify-start sm:px-0">
+              <BrandLogo
+                variant="worldwide"
+                className="w-[min(78vw,320px)] sm:w-[min(280px,100%)]"
+              />
+            </div>
             <p className="max-w-full break-words text-[clamp(1.7rem,7vw,4rem)] font-medium leading-[1.08] tracking-[-0.035em] sm:max-w-[16ch]">
               Dextrans Group Cargo
             </p>
