@@ -122,7 +122,7 @@ export function WarehouseDetailCard({ warehouse }: { warehouse: WarehouseDetails
 
   return (
     <article className="min-w-0 overflow-hidden rounded-3xl border border-border bg-card shadow-[0_10px_40px_-20px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-24px_rgba(15,23,42,0.45)] dark:shadow-[0_10px_40px_-18px_rgba(0,0,0,0.65)]">
-      <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid w-full min-w-0 gap-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <div className="min-w-0 space-y-5 p-4 sm:p-5 md:p-6">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">

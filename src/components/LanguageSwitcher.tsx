@@ -198,8 +198,8 @@ export function LanguageSwitcher({
         ref={buttonRef}
         type="button"
         className={cn(
-          "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition",
-          compact && "!min-h-11 !px-2.5",
+          "inline-flex min-h-11 max-w-full shrink-0 items-center gap-1 rounded-full border px-2 py-2 text-xs font-semibold transition sm:gap-1.5 sm:px-3 sm:text-sm",
+          compact && "!min-h-11 !px-2",
           variant === "default" &&
             "border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]",
           (variant === "dock" || variant === "nav") &&

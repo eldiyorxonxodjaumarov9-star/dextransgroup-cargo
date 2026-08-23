@@ -43,8 +43,8 @@ export function GuestServicesBanner({
       ref={ref}
       className="scroll-mt-24 overflow-hidden border-y border-white/5 sm:scroll-mt-28"
     >
-      <div className="grid lg:grid-cols-2">
-        <Reveal className="relative min-h-[260px] overflow-hidden sm:min-h-[360px] lg:min-h-[620px]">
+      <div className="grid w-full min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Reveal className="relative min-h-[260px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[620px]">
           <motion.div style={{ y }} className="absolute inset-0 lg:inset-[-10%]">
             <Image
               src={bannerSrc}
@@ -57,10 +57,10 @@ export function GuestServicesBanner({
           </motion.div>
         </Reveal>
 
-        <div className="flex items-center bg-[var(--canvas)] px-5 py-12 sm:px-10 lg:px-14 lg:py-20">
-          <div className="w-full min-w-0">
+        <div className="flex min-w-0 items-center bg-[var(--canvas)] px-4 py-12 sm:px-10 lg:px-14 lg:py-20">
+          <div className="w-full min-w-0 max-w-full">
             <Reveal>
-              <h2 className="section-title max-w-[16ch]">
+              <h2 className="section-title max-w-full sm:max-w-[16ch]">
                 {t.guest.title}
               </h2>
             </Reveal>

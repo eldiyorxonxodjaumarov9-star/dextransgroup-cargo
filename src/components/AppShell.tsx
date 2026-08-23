@@ -150,7 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </header>
-          <main className="canvas-pad overflow-x-clip py-4 sm:py-6">{children}</main>
+          <main className="canvas-pad w-full min-w-0 max-w-full py-4 sm:py-6">{children}</main>
           <SiteFooter />
         </div>
       </div>
@@ -161,26 +161,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="site-frame">
       <div className="site-canvas">
         {/* Mobile compact header */}
-        <header className="sticky top-0 z-[80] border-b border-white/10 bg-[var(--canvas)]/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
-          <div className="flex min-h-12 items-center gap-2">
+        <header className="sticky top-0 z-[80] box-border w-full max-w-full border-b border-white/10 bg-[var(--canvas)]/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
+          <div className="flex min-h-11 w-full min-w-0 max-w-full items-center gap-1.5">
             <button
               type="button"
-              className="min-w-0 shrink"
+              className="min-w-0 max-w-[clamp(135px,42vw,185px)] shrink"
               onClick={() => goNav(publicNav[0])}
               aria-label={t.nav.home}
             >
               <BrandLogo
                 variant="nav"
                 priority
-                className="h-8 w-auto max-w-[min(150px,42vw)]"
+                className="h-7 w-auto max-w-full object-contain sm:h-8"
               />
             </button>
-            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
               <LanguageSwitcher compact variant="nav" />
-              {themeButton}
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)] text-white"
+                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--panel-2)] text-[var(--text)] min-[390px]:inline-flex"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={t.nav.theme}
+              >
+                {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white"
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
                 aria-expanded={menuOpen}
@@ -281,15 +288,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 transition={{ type: "spring", stiffness: 340, damping: 34 }}
               >
                 <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4">
-                  <p className="text-sm font-semibold">{t.nav.menu}</p>
-                  <button
-                    type="button"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--panel-2)]"
-                    onClick={() => setMenuOpen(false)}
-                    aria-label={t.nav.closeMenu}
-                  >
-                    <X size={18} />
-                  </button>
+                  <p className="min-w-0 text-sm font-semibold">{t.nav.menu}</p>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--panel-2)] min-[390px]:hidden"
+                      onClick={() => setTheme(isDark ? "light" : "dark")}
+                      aria-label={t.nav.theme}
+                    >
+                      {mounted ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--panel-2)]"
+                      onClick={() => setMenuOpen(false)}
+                      aria-label={t.nav.closeMenu}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
                 </div>
                 <nav
                   className="overflow-y-auto px-3 py-3"
@@ -333,7 +350,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </AnimatePresence>
 
-        <div className="overflow-x-clip pb-8 pt-2 lg:pb-12">{children}</div>
+        <div className="w-full min-w-0 max-w-full pb-8 pt-2 lg:pb-12">{children}</div>
         <SiteFooter />
       </div>
     </div>

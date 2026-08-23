@@ -21,7 +21,7 @@ export function OperatorCard({ operator }: OperatorCardProps) {
     : null;
 
   return (
-    <article className="folder-card min-w-0 bg-[var(--panel)] p-6 sm:p-7">
+    <article className="folder-card w-full min-w-0 max-w-full bg-[var(--panel)] p-5 sm:p-7">
       <div className="mb-8 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-4 flex h-12 w-12 items-center justify-center bg-[var(--accent)] text-lg font-semibold text-white">
@@ -40,12 +40,16 @@ export function OperatorCard({ operator }: OperatorCardProps) {
       </div>
 
       <div className="flex flex-col gap-3">
-        <a href={phoneHref} title={operator.phone} className="cta-capsule cta-capsule-orange group">
-          <span className="cta-label flex-1 justify-center gap-2">
-            <Phone size={15} />
-            <span className="break-all">{operator.phone}</span>
+        <a
+          href={phoneHref}
+          title={operator.phone}
+          className="cta-capsule cta-capsule-orange group inline-flex w-full min-w-0 max-w-full"
+        >
+          <span className="cta-label min-h-12 min-w-0 flex-1 justify-center gap-2">
+            <Phone size={15} className="shrink-0" />
+            <span className="min-w-0 break-all">{operator.phone}</span>
           </span>
-          <span className="arrow-circle arrow-circle-light">
+          <span className="arrow-circle arrow-circle-light shrink-0">
             <ArrowUpRight size={16} />
           </span>
         </a>

@@ -164,7 +164,7 @@ export function HomePublicContent({
       {/* HERO */}
       <section id="home" className="canvas-pad scroll-mt-24 pt-4 sm:scroll-mt-28 sm:pt-10 lg:pt-12">
         <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr] lg:items-end lg:gap-12">
-          <h1 className="max-w-full text-[clamp(2.35rem,11vw,5.75rem)] font-medium leading-[1.05] tracking-[-0.04em] text-[var(--text)] sm:max-w-[11ch] sm:text-[clamp(2.75rem,7.5vw,5.75rem)] sm:leading-[1.02]">
+          <h1 className="max-w-full text-[clamp(2.2rem,10vw,5.75rem)] font-medium leading-[1.05] tracking-[-0.04em] text-[var(--text)] sm:max-w-[11ch] sm:text-[clamp(2.75rem,7.5vw,5.75rem)] sm:leading-[1.02]">
             {headline.map((line, index) => (
               <motion.span
                 key={line}
@@ -215,7 +215,7 @@ export function HomePublicContent({
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
           </motion.div>
 
-          <div className="relative z-10 mt-4 grid gap-3 sm:-mt-14 sm:mt-0 sm:grid-cols-2 sm:gap-4 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:w-[min(520px,48%)] lg:translate-y-1/3 lg:grid-cols-2">
+          <div className="relative z-10 mt-4 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:w-[min(520px,48%)] lg:translate-y-1/3">
             <motion.div
               className="folder-card bg-[var(--accent)] p-4 text-white sm:p-6"
               initial={reduced ? false : { opacity: 0, y: 24 }}
@@ -252,7 +252,7 @@ export function HomePublicContent({
           <h2 className="section-title max-w-[10ch]">{t.channels.openChannel}</h2>
         </Reveal>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+        <div className="mt-12 grid w-full min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
           <Reveal>
             {"internal" in featured && featured.internal ? (
               <Link href={featured.href} className="group relative block aspect-[4/5] overflow-hidden sm:aspect-[5/4] lg:aspect-auto lg:min-h-[520px]">
@@ -350,7 +350,7 @@ export function HomePublicContent({
 
       {/* VALUES */}
       <section className="canvas-pad section-space pt-0">
-        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {values.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -381,7 +381,7 @@ export function HomePublicContent({
           <p className="max-w-xl text-[var(--muted)]">{t.home.cargoSubtitle}</p>
         </Reveal>
 
-        <Reveal className="mt-8 sm:mt-10">
+        <Reveal className="mt-8 w-full min-w-0 max-w-full sm:mt-10">
           <div className="tabs-scroll border-b border-white/10">
             {cargoSections.map((section) => {
               const count = items.filter((item) => item.category === section.category).length;
@@ -422,12 +422,16 @@ export function HomePublicContent({
             transition={{ duration: 0.25 }}
           >
             {activeCargo.length ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {activeCargo.map((item, index) => (
-                  <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
-                    <ItemCard item={item} />
-                  </Reveal>
-                ))}
+              <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {activeCargo.map((item, index) => (
+                    <Reveal
+                      key={item.id}
+                      delay={Math.min(index * 0.04, 0.2)}
+                      className="min-w-0 max-w-full"
+                    >
+                      <ItemCard item={item} />
+                    </Reveal>
+                  ))}
               </div>
             ) : (
               <div className="py-20">
@@ -461,9 +465,13 @@ export function HomePublicContent({
         </Reveal>
 
         {operators.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {operators.map((operator, index) => (
-              <Reveal key={operator.id} delay={Math.min(index * 0.05, 0.2)}>
+              <Reveal
+                key={operator.id}
+                delay={Math.min(index * 0.05, 0.2)}
+                className="min-w-0 max-w-full"
+              >
                 <OperatorCard operator={operator} />
               </Reveal>
             ))}

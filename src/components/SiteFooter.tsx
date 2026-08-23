@@ -33,15 +33,15 @@ export function SiteFooter() {
   ];
 
   return (
-    <footer className="mt-8 overflow-x-clip border-t border-white/10 bg-[var(--canvas)] text-[var(--text)] safe-bottom">
+    <footer className="mt-8 w-full min-w-0 max-w-full border-t border-white/10 bg-[var(--canvas)] text-[var(--text)] safe-bottom">
       <div className="canvas-pad py-12 sm:py-20 lg:py-24">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-6 sm:space-y-8">
             <BrandLogo
               variant="worldwide"
-              className="max-w-[min(240px,78vw)]"
+              className="h-auto w-auto max-w-[min(240px,100%)]"
             />
-            <p className="max-w-[16ch] text-[clamp(1.7rem,7vw,4rem)] font-medium leading-[1.08] tracking-[-0.035em]">
+            <p className="max-w-full break-words text-[clamp(1.7rem,7vw,4rem)] font-medium leading-[1.08] tracking-[-0.035em] sm:max-w-[16ch]">
               Dextrans Group Cargo
             </p>
             <p className="max-w-md text-sm leading-relaxed text-[var(--muted)]">
