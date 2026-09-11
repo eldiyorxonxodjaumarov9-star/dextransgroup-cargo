@@ -178,7 +178,7 @@ export function HomePublicContent({
 
       {/* 01 Hero */}
       <section id="home" className="page-wrap relative pt-6 sm:pt-10 lg:pt-14">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-8 xl:gap-10">
+        <div className="home-hero">
           <div className="home-hero__copy">
             <FadeIn>
               <p className="section-kicker">{t.home.heroLabel}</p>
@@ -225,7 +225,7 @@ export function HomePublicContent({
               </div>
             </FadeIn>
           </div>
-          <FadeIn delay={0.2}>
+          <FadeIn delay={0.2} className="home-hero__viz">
             <HeroLogisticsViz />
           </FadeIn>
         </div>
