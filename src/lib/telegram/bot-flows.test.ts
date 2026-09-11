@@ -32,7 +32,9 @@ describe("telegram bot messages + permissions", () => {
 
   it("builds welcome with admin hint", () => {
     assert.match(welcomeText(true), /Admin/);
+    assert.match(welcomeText(true), /pastdagi menyudan/);
     assert.doesNotMatch(welcomeText(false), /Admin/);
+    assert.match(welcomeText(false), /pastdagi menyudan/);
   });
 
   it("formats unknown track message", () => {
@@ -86,6 +88,11 @@ describe("telegram bot messages + permissions", () => {
     const labels = publicKb.keyboard.flat().map((b) => b.text);
     assert.ok(labels.includes("📦 Yukimni tekshirish"));
     assert.ok(!labels.includes("⚙️ Admin boshqaruvi"));
+    assert.equal(
+      "inline_keyboard" in publicKb,
+      false,
+      "main menu must not use inline_keyboard"
+    );
 
     const adminKb = publicReplyKeyboard(true);
     assert.ok(

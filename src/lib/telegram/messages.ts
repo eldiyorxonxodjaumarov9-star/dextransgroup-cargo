@@ -63,7 +63,7 @@ export function welcomeText(isAdmin: boolean) {
     "Assalomu alaykum! 👋",
     "",
     "Dextrans Group Cargo botiga xush kelibsiz.",
-    "Yukni tekshirish, omborlar va operatorlar — shu yerdan.",
+    "Kerakli bo‘limni pastdagi menyudan tanlang.",
   ];
   if (isAdmin) {
     lines.push("", "⚙️ Admin menyusi mavjud.");
@@ -72,7 +72,7 @@ export function welcomeText(isAdmin: boolean) {
 }
 
 export function menuHintText() {
-  return "Asosiy menyu. Kerakli bo‘limni tanlang.";
+  return "Kerakli bo‘limni pastdagi menyudan tanlang.";
 }
 
 export function trackAskText() {

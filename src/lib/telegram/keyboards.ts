@@ -46,6 +46,16 @@ export function homeInline(appUrl: string): InlineKeyboardMarkup {
   };
 }
 
+/** Single site open button — not the full main menu. */
+export function openSiteKeyboard(appUrl: string): InlineKeyboardMarkup {
+  const base = appUrl.replace(/\/$/, "");
+  return {
+    inline_keyboard: [
+      [{ text: "🌐 Saytni ochish", web_app: { url: `${base}/telegram` } }],
+    ],
+  };
+}
+
 export function warehouseRegionsKeyboard(): InlineKeyboardMarkup {
   return {
     inline_keyboard: [

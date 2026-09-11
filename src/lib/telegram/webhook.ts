@@ -25,7 +25,7 @@ import {
   cargoResultKeyboard,
   categoryKeyboard,
   guestServicesKeyboard,
-  homeInline,
+  openSiteKeyboard,
   operatorPickKeyboard,
   previewKeyboard,
   publicReplyKeyboard,
@@ -114,16 +114,11 @@ async function sendHome(options: {
 }) {
   const isAdmin = assertTelegramAdmin(options.userId, options.adminIds);
   await clearSession(String(options.userId));
+  // Main menu: text + bottom reply keyboard only (no duplicate inline home buttons).
   await reply(
     options.chatId,
     options.greet ? welcomeText(isAdmin) : menuHintText(),
     publicReplyKeyboard(isAdmin),
-    options.botToken
-  );
-  await reply(
-    options.chatId,
-    "Tezkor tugmalar:",
-    homeInline(options.appUrl),
     options.botToken
   );
 }
@@ -172,7 +167,9 @@ async function handleTrackLookup(options: {
     await reply(
       options.chatId,
       cargoNotFoundText(options.track),
-      homeInline(options.ctx.appUrl),
+      publicReplyKeyboard(
+        assertTelegramAdmin(options.userId, options.ctx.adminIds)
+      ),
       options.ctx.botToken
     );
     await upsertSession({
@@ -201,7 +198,12 @@ async function handleTrackLookup(options: {
 
 async function startAddCargo(chatId: number | string, userId: number, ctx: Ctx) {
   if (!assertTelegramAdmin(userId, ctx.adminIds)) {
-    await reply(chatId, "⛔ Ruxsat yo‘q.", homeInline(ctx.appUrl), ctx.botToken);
+    await reply(
+      chatId,
+      "⛔ Ruxsat yo‘q.",
+      publicReplyKeyboard(false),
+      ctx.botToken
+    );
     return;
   }
   await upsertSession({
@@ -362,7 +364,12 @@ export async function handleTelegramUpdate(options: {
 
   if (cmd === "/cancel") {
     await clearSession(String(userId));
-    await reply(chatId, "Jarayon bekor qilindi.", homeInline(ctx.appUrl), ctx.botToken);
+    await reply(
+      chatId,
+      "Jarayon bekor qilindi.\n\nKerakli bo‘limni pastdagi menyudan tanlang.",
+      publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+      ctx.botToken
+    );
     return { handled: true };
   }
 
@@ -383,7 +390,7 @@ export async function handleTelegramUpdate(options: {
     return { handled: true };
   }
   if (text === "👨‍💼 Operatorlar") {
-    await sendOperators(chatId, ctx);
+    await sendOperators(chatId, userId, ctx);
     return { handled: true };
   }
   if (text === "🛎 Xizmatlar") {
@@ -399,14 +406,19 @@ export async function handleTelegramUpdate(options: {
     await reply(
       chatId,
       "Sayt / Mini App:",
-      homeInline(ctx.appUrl),
+      openSiteKeyboard(ctx.appUrl),
       ctx.botToken
     );
     return { handled: true };
   }
   if (text === "⚙️ Admin boshqaruvi") {
     if (!assertTelegramAdmin(userId, ctx.adminIds)) {
-      await reply(chatId, "⛔ Admin ruxsati yo‘q.", homeInline(ctx.appUrl), ctx.botToken);
+      await reply(
+        chatId,
+        "⛔ Admin ruxsati yo‘q.",
+        publicReplyKeyboard(false),
+        ctx.botToken
+      );
       return { handled: true };
     }
     await reply(chatId, adminMenuText(), adminMenuKeyboard(ctx.appUrl), ctx.botToken);
@@ -445,13 +457,17 @@ export async function handleTelegramUpdate(options: {
   await reply(
     chatId,
     "Tushunmadim. Menyudan tanlang yoki /menu bosing.",
-    homeInline(ctx.appUrl),
+    publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
     ctx.botToken
   );
   return { handled: true };
 }
 
-async function sendOperators(chatId: number | string, ctx: Ctx) {
+async function sendOperators(
+  chatId: number | string,
+  userId: number,
+  ctx: Ctx
+) {
   const operators = await prisma.operator.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
@@ -459,13 +475,23 @@ async function sendOperators(chatId: number | string, ctx: Ctx) {
     take: 20,
   });
   if (!operators.length) {
-    await reply(chatId, "Hozircha operator yo‘q.", homeInline(ctx.appUrl), ctx.botToken);
+    await reply(
+      chatId,
+      "Hozircha operator yo‘q.",
+      publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+      ctx.botToken
+    );
     return;
   }
   for (const op of operators) {
     await reply(chatId, formatOperatorCard(op), undefined, ctx.botToken);
   }
-  await reply(chatId, "Asosiy menyu:", homeInline(ctx.appUrl), ctx.botToken);
+  await reply(
+    chatId,
+    "Kerakli bo‘limni pastdagi menyudan tanlang.",
+    publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+    ctx.botToken
+  );
 }
 
 async function handleCallback(options: {
@@ -580,7 +606,7 @@ async function handleCallback(options: {
   }
 
   if (data === "p:op") {
-    await sendOperators(chatId, ctx);
+    await sendOperators(chatId, userId, ctx);
     return;
   }
 
@@ -601,7 +627,12 @@ async function handleCallback(options: {
       select: { id: true, trackNumber: true },
     });
     if (!cargo) {
-      await reply(chatId, "Yuk topilmadi.", homeInline(ctx.appUrl), ctx.botToken);
+      await reply(
+        chatId,
+        "Yuk topilmadi.",
+        publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+        ctx.botToken
+      );
       return;
     }
     await subscribeToCargo({
@@ -612,7 +643,7 @@ async function handleCallback(options: {
     await reply(
       chatId,
       `🔔 Obuna qilindi.\n${cargo.trackNumber}\nStatus o‘zgarsa xabar beramiz.`,
-      homeInline(ctx.appUrl),
+      publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
       ctx.botToken
     );
     return;
@@ -621,7 +652,12 @@ async function handleCallback(options: {
   // ---- Admin callbacks: ALWAYS re-check admin IDs ----
   if (data.startsWith("a:")) {
     if (!assertTelegramAdmin(userId, ctx.adminIds)) {
-      await reply(chatId, "⛔ Admin ruxsati yo‘q.", homeInline(ctx.appUrl), ctx.botToken);
+      await reply(
+        chatId,
+        "⛔ Admin ruxsati yo‘q.",
+        publicReplyKeyboard(false),
+        ctx.botToken
+      );
       return;
     }
 
