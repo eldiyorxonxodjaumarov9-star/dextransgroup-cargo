@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname === "/telegram/admin" || pathname.startsWith("/telegram/admin/");
   const { theme, setTheme } = useTheme();
   const { t } = useLocale();
-  const reduced = useReducedMotion();
+  const reduceMotionPref = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -37,6 +37,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const wasMenuOpen = useRef(false);
   const drawerId = useId();
+
+  // Gate reduced-motion behind mount so SSR markup matches the first client render.
+  const reduced = mounted ? Boolean(reduceMotionPref) : false;
 
   const publicNav: NavItem[] = useMemo(
     () => [
@@ -133,23 +136,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.location.assign(item.href);
   }
 
-  const themeButton = (
+  const themeButton = mounted ? (
     <button
       type="button"
       className="site-header__icon-btn"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={t.nav.theme}
     >
-      {mounted ? (
-        isDark ? (
-          <Sun size={16} />
-        ) : (
-          <Moon size={16} />
-        )
-      ) : (
-        <Moon size={16} />
-      )}
+      {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
+  ) : (
+    <span className="site-header__icon-btn" aria-hidden="true" />
   );
 
   if (isAdmin) {

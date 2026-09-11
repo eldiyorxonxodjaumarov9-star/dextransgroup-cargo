@@ -45,7 +45,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" className="dark" suppressHydrationWarning>
+    // suppressHydrationWarning: required for next-themes — it may set class/style on
+    // <html> from localStorage before hydration (server default vs client stored theme).
+    <html lang="uz" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${syne.variable} ${jetbrainsMono.variable} min-h-[100dvh] antialiased`}
       >
