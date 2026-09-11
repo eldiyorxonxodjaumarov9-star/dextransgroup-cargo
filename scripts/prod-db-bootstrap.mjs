@@ -49,6 +49,19 @@ if (isBad(process.env.DATABASE_URL)) {
 let migrate = migrateDeploy();
 let text = print(migrate);
 
+// Recover from a previously failed migration record (e.g. interrupted deploy).
+if ((migrate.status ?? 1) !== 0 && text.includes("P3009")) {
+  const failed = text.match(/The `([^`]+)` migration/);
+  if (failed?.[1]) {
+    console.warn(
+      `[prod-db] Failed migration detected (${failed[1]}) — marking rolled-back, then retrying deploy...`
+    );
+    print(run(["migrate", "resolve", "--rolled-back", failed[1]]));
+    migrate = migrateDeploy();
+    text = print(migrate);
+  }
+}
+
 if ((migrate.status ?? 1) !== 0 && text.includes("P3005")) {
   console.warn(
     "[prod-db] DB not empty and unbaselined — applying init SQL directly, then marking applied..."

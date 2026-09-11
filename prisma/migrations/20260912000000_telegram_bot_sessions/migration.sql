@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "TelegramBotSession" (
+CREATE TABLE IF NOT EXISTS "TelegramBotSession" (
     "id" TEXT NOT NULL,
     "telegramUserId" TEXT NOT NULL,
     "chatId" TEXT NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE "TelegramBotSession" (
 );
 
 -- CreateTable
-CREATE TABLE "TelegramProcessedUpdate" (
+CREATE TABLE IF NOT EXISTS "TelegramProcessedUpdate" (
     "updateId" BIGINT NOT NULL,
     "processedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -21,7 +21,7 @@ CREATE TABLE "TelegramProcessedUpdate" (
 );
 
 -- CreateTable
-CREATE TABLE "TelegramCargoSubscription" (
+CREATE TABLE IF NOT EXISTS "TelegramCargoSubscription" (
     "id" TEXT NOT NULL,
     "telegramUserId" TEXT NOT NULL,
     "chatId" TEXT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE "TelegramCargoSubscription" (
 );
 
 -- CreateTable
-CREATE TABLE "TelegramNotificationEvent" (
+CREATE TABLE IF NOT EXISTS "TelegramNotificationEvent" (
     "id" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "cargoItemId" TEXT NOT NULL,
@@ -51,22 +51,32 @@ CREATE TABLE "TelegramNotificationEvent" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TelegramBotSession_telegramUserId_key" ON "TelegramBotSession"("telegramUserId");
+CREATE UNIQUE INDEX IF NOT EXISTS "TelegramBotSession_telegramUserId_key" ON "TelegramBotSession"("telegramUserId");
 
 -- CreateIndex
-CREATE INDEX "TelegramBotSession_expiresAt_idx" ON "TelegramBotSession"("expiresAt");
+CREATE INDEX IF NOT EXISTS "TelegramBotSession_expiresAt_idx" ON "TelegramBotSession"("expiresAt");
 
 -- CreateIndex
-CREATE INDEX "TelegramCargoSubscription_cargoItemId_isActive_idx" ON "TelegramCargoSubscription"("cargoItemId", "isActive");
+CREATE INDEX IF NOT EXISTS "TelegramCargoSubscription_cargoItemId_isActive_idx" ON "TelegramCargoSubscription"("cargoItemId", "isActive");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TelegramCargoSubscription_telegramUserId_cargoItemId_key" ON "TelegramCargoSubscription"("telegramUserId", "cargoItemId");
+CREATE UNIQUE INDEX IF NOT EXISTS "TelegramCargoSubscription_telegramUserId_cargoItemId_key" ON "TelegramCargoSubscription"("telegramUserId", "cargoItemId");
 
 -- CreateIndex
-CREATE INDEX "TelegramNotificationEvent_status_createdAt_idx" ON "TelegramNotificationEvent"("status", "createdAt");
+CREATE INDEX IF NOT EXISTS "TelegramNotificationEvent_status_createdAt_idx" ON "TelegramNotificationEvent"("status", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "TelegramNotificationEvent_cargoItemId_idx" ON "TelegramNotificationEvent"("cargoItemId");
+CREATE INDEX IF NOT EXISTS "TelegramNotificationEvent_cargoItemId_idx" ON "TelegramNotificationEvent"("cargoItemId");
 
--- AddForeignKey
-ALTER TABLE "TelegramCargoSubscription" ADD CONSTRAINT "TelegramCargoSubscription_cargoItemId_fkey" FOREIGN KEY ("cargoItemId") REFERENCES "CargoItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- AddForeignKey (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'TelegramCargoSubscription_cargoItemId_fkey'
+  ) THEN
+    ALTER TABLE "TelegramCargoSubscription"
+      ADD CONSTRAINT "TelegramCargoSubscription_cargoItemId_fkey"
+      FOREIGN KEY ("cargoItemId") REFERENCES "CargoItem"("id")
+      ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
