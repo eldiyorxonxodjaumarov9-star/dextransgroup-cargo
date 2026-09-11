@@ -46,11 +46,11 @@ import {
   formatOperatorCard,
   formatPublicCargo,
   formatWarehouseCard,
-  guestServicesText,
   menuHintText,
   trackAskText,
   welcomeText,
 } from "@/lib/telegram/messages";
+import { getGuestServicesBotText } from "@/lib/telegram/guest-services";
 import { assertTelegramAdmin } from "@/lib/telegram/permissions";
 import { isSubscribed, subscribeToCargo } from "@/lib/telegram/subscriptions";
 import type { CargoCategory, CargoStatus } from "@/lib/types";
@@ -396,7 +396,7 @@ export async function handleTelegramUpdate(options: {
   if (text === "🛎 Xizmatlar") {
     await reply(
       chatId,
-      guestServicesText(),
+      await getGuestServicesBotText(),
       guestServicesKeyboard(ctx.appUrl),
       ctx.botToken
     );
@@ -613,7 +613,7 @@ async function handleCallback(options: {
   if (data === "p:svc") {
     await reply(
       chatId,
-      guestServicesText(),
+      await getGuestServicesBotText(),
       guestServicesKeyboard(ctx.appUrl),
       ctx.botToken
     );

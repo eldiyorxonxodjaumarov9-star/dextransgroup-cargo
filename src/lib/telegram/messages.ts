@@ -149,17 +149,17 @@ export function formatOperatorCard(op: {
     .join("\n");
 }
 
-export function guestServicesText() {
-  return [
-    "🛎 Mehmonlar uchun xizmatlar",
-    "",
-    "• Aeroportda kutib olish",
-    "• Tarjimonlik",
-    "• Ko‘rgazmalar",
-    "• Ekskursiyalar",
-    "",
-    "Batafsil media uchun Mini Appni oching.",
-  ].join("\n");
+export function guestServicesText(titles?: string[]) {
+  const lines = ["🛎 Mehmonlar uchun xizmatlar", ""];
+  if (titles?.length) {
+    for (const title of titles) {
+      lines.push(`• ${title}`);
+    }
+  } else {
+    lines.push("Hozircha faol xizmatlar ro‘yxati bo‘sh.");
+  }
+  lines.push("", "Batafsil media uchun Mini Appni oching.");
+  return lines.join("\n");
 }
 
 export function adminMenuText() {

@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { itemPayload, itemListInclude, parseItemRequest, sanitizeItem } from "@/lib/item-api";
+import { createCargoItem, findCargoByTrackNumber } from "@/lib/cargo-service";
+import { itemListInclude, parseItemRequest, sanitizeItem } from "@/lib/item-api";
 import { prisma } from "@/lib/prisma";
-import { itemPdfPath } from "@/lib/upload-pdf";
 import { cargoItemSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const track = searchParams.get("track")?.trim();
+  if (track) {
+    const item = await findCargoByTrackNumber(track);
+    return NextResponse.json(item ? [item] : []);
+  }
+
   const q = searchParams.get("q")?.trim();
   const status = searchParams.get("status")?.trim();
   const category = searchParams.get("category")?.trim();
@@ -64,26 +70,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "PDF fayl yuklash majburiy" }, { status: 400 });
     }
 
-    const base = itemPayload(parsed.data);
-    const item = await prisma.cargoItem.create({
-      data: {
-        ...base,
-        pdfData: parsed.data.entryType === "PDF" ? parsedRequest.pdfData : null,
-        pdfUrl: null,
+    const result = await createCargoItem(
+      {
+        name: parsed.data.name,
+        trackNumber: parsed.data.trackNumber,
+        entryType: parsed.data.entryType,
+        category: parsed.data.category,
+        status: parsed.data.status,
+        date: parsed.data.date,
+        etaDate: parsed.data.etaDate,
+        notes: parsed.data.notes,
+        warehouseId: parsed.data.warehouseId,
+        operatorId: parsed.data.operatorId,
+        imageUrl: parsed.data.imageUrl,
+        description: parsed.data.description,
+        price: parsed.data.price,
+        telegramUrl: parsed.data.telegramUrl,
+        locationUrl: parsed.data.locationUrl,
+        chinaAddress: parsed.data.chinaAddress,
+        pdfFileName: parsed.data.pdfFileName,
+        pdfUrl: parsed.data.pdfUrl,
       },
-      include: itemListInclude,
-    });
+      { pdfData: parsedRequest.pdfData }
+    );
 
-    if (item.entryType === "PDF") {
-      const updated = await prisma.cargoItem.update({
-        where: { id: item.id },
-        data: { pdfUrl: itemPdfPath(item.id) },
-        include: itemListInclude,
-      });
-      return NextResponse.json(sanitizeItem(updated), { status: 201 });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json(sanitizeItem(item), { status: 201 });
+    return NextResponse.json(result.item, { status: 201 });
   } catch (error) {
     const message =
       error instanceof Error && error.message.includes("Unique constraint")

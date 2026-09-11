@@ -1,8 +1,11 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { itemListInclude, itemPayload, sanitizeItem } from "@/lib/item-api";
 import { cargoItemSchema } from "@/lib/validations";
 import type { CargoCategory, CargoStatus } from "@/lib/types";
 import { enqueueStatusChangeNotifications } from "@/lib/telegram/subscriptions";
+import { emptyToNull } from "@/lib/utils";
+import { itemPdfPath } from "@/lib/upload-pdf";
 
 export const publicCargoInclude = {
   warehouse: { select: { id: true, name: true, city: true, region: true } },
@@ -14,18 +17,48 @@ export type CreateCargoInput = {
   trackNumber: string;
   category: CargoCategory;
   status: CargoStatus;
+  entryType?: "MANUAL" | "PDF";
   warehouseId?: string | null;
   operatorId?: string | null;
   etaDate?: string | null;
   notes?: string | null;
   date?: string;
+  imageUrl?: string | null;
+  description?: string | null;
+  price?: string | null;
+  telegramUrl?: string | null;
+  locationUrl?: string | null;
+  chinaAddress?: string | null;
+  pdfFileName?: string | null;
+  pdfUrl?: string | null;
 };
+
+/** Invalidate cargo-related pages after create/update/delete. */
+export function revalidateCargoViews() {
+  try {
+    revalidatePath("/");
+    revalidatePath("/cargo");
+    revalidatePath("/telegram");
+    revalidatePath("/admin");
+    revalidatePath("/admin/items");
+  } catch {
+    // Safe outside Next.js request context (unit tests / scripts).
+  }
+}
 
 export async function findCargoByTrackNumber(trackNumber: string) {
   const q = trackNumber.trim();
   if (!q) return null;
   const item = await prisma.cargoItem.findFirst({
     where: { trackNumber: { equals: q, mode: "insensitive" } },
+    include: publicCargoInclude,
+  });
+  return item ? sanitizeItem(item) : null;
+}
+
+export async function findCargoById(id: string) {
+  const item = await prisma.cargoItem.findUnique({
+    where: { id },
     include: publicCargoInclude,
   });
   return item ? sanitizeItem(item) : null;
@@ -49,11 +82,15 @@ export async function getCargoStats() {
   return { total, byCategory, byStatus };
 }
 
-export async function createCargoItem(input: CreateCargoInput) {
+export async function createCargoItem(
+  input: CreateCargoInput,
+  extras?: { pdfData?: Buffer | null }
+) {
+  const entryType = input.entryType || "MANUAL";
   const body = {
     name: input.name.trim(),
     trackNumber: input.trackNumber.trim(),
-    entryType: "MANUAL" as const,
+    entryType,
     category: input.category,
     status: input.status,
     date: input.date || new Date().toISOString().slice(0, 10),
@@ -61,6 +98,17 @@ export async function createCargoItem(input: CreateCargoInput) {
     notes: input.notes || "",
     warehouseId: input.warehouseId || "",
     operatorId: input.operatorId || "",
+    imageUrl: input.imageUrl || "",
+    description: input.description || "",
+    price: input.price || "",
+    telegramUrl: input.telegramUrl || "",
+    locationUrl: input.locationUrl || "",
+    chinaAddress: input.chinaAddress || "",
+    pdfFileName: input.pdfFileName || "",
+    pdfUrl:
+      entryType === "PDF"
+        ? input.pdfUrl || (extras?.pdfData ? "pending" : "")
+        : "",
   };
 
   const parsed = cargoItemSchema.safeParse(body);
@@ -71,8 +119,14 @@ export async function createCargoItem(input: CreateCargoInput) {
     };
   }
 
-  const existing = await prisma.cargoItem.findUnique({
-    where: { trackNumber: parsed.data.trackNumber },
+  if (parsed.data.entryType === "PDF" && !extras?.pdfData) {
+    return { ok: false as const, error: "PDF fayl yuklash majburiy" };
+  }
+
+  const existing = await prisma.cargoItem.findFirst({
+    where: {
+      trackNumber: { equals: parsed.data.trackNumber, mode: "insensitive" },
+    },
     select: { id: true },
   });
   if (existing) {
@@ -95,10 +149,25 @@ export async function createCargoItem(input: CreateCargoInput) {
   }
 
   try {
-    const item = await prisma.cargoItem.create({
-      data: itemPayload(parsed.data),
+    const created = await prisma.cargoItem.create({
+      data: {
+        ...itemPayload(parsed.data),
+        pdfData: parsed.data.entryType === "PDF" ? extras?.pdfData ?? null : null,
+        pdfUrl: null,
+      },
       include: itemListInclude,
     });
+
+    const item =
+      created.entryType === "PDF"
+        ? await prisma.cargoItem.update({
+            where: { id: created.id },
+            data: { pdfUrl: itemPdfPath(created.id) },
+            include: itemListInclude,
+          })
+        : created;
+
+    revalidateCargoViews();
     return { ok: true as const, item: sanitizeItem(item) };
   } catch (error) {
     const message =
@@ -145,13 +214,19 @@ export async function updateCargoStatus(options: {
     console.error("[cargo-service] notification enqueue failed", error);
   }
 
+  revalidateCargoViews();
   return { ok: true as const, item: sanitizeItem(item), changed: true };
 }
 
 export async function updateCargoItemFields(
   id: string,
   data: Parameters<typeof itemPayload>[0],
-  extras?: { pdfData?: Buffer | null; keepPdf?: boolean; existingPdfName?: string | null }
+  extras?: {
+    pdfData?: Buffer | null;
+    keepPdf?: boolean;
+    existingPdfName?: string | null;
+    existingImageUrl?: string | null;
+  }
 ) {
   const existing = await prisma.cargoItem.findUnique({ where: { id } });
   if (!existing) return { ok: false as const, error: "Yuk topilmadi" };
@@ -164,9 +239,13 @@ export async function updateCargoItemFields(
     where: { id },
     data: {
       ...base,
+      imageUrl:
+        emptyToNull(data.imageUrl) ??
+        (isPdf ? extras?.existingImageUrl ?? existing.imageUrl : null),
       pdfData: isPdf
         ? extras?.pdfData ?? (extras?.keepPdf ? existing.pdfData : null)
         : null,
+      pdfUrl: isPdf ? itemPdfPath(id) : null,
       pdfFileName: isPdf
         ? data.pdfFileName || extras?.existingPdfName || existing.pdfFileName
         : null,
@@ -186,5 +265,16 @@ export async function updateCargoItemFields(
     }
   }
 
+  revalidateCargoViews();
   return { ok: true as const, item: sanitizeItem(item) };
+}
+
+export async function deleteCargoItem(id: string) {
+  try {
+    await prisma.cargoItem.delete({ where: { id } });
+    revalidateCargoViews();
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, error: "Tovarni o‘chirishda xatolik" };
+  }
 }

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { itemPayload, itemListInclude, parseItemRequest, sanitizeItem } from "@/lib/item-api";
+import {
+  deleteCargoItem,
+  updateCargoItemFields,
+} from "@/lib/cargo-service";
+import { parseItemRequest } from "@/lib/item-api";
 import { prisma } from "@/lib/prisma";
-import { emptyToNull } from "@/lib/utils";
-import { itemPdfPath } from "@/lib/upload-pdf";
 import { cargoItemSchema } from "@/lib/validations";
 
 type Params = { params: Promise<{ id: string }> };
@@ -48,50 +50,18 @@ export async function PUT(request: Request, { params }: Params) {
       return NextResponse.json({ error: "PDF fayl yuklash majburiy" }, { status: 400 });
     }
 
-    const previousStatus = existing.status;
-    const base = itemPayload(parsed.data);
-    const isPdf = parsed.data.entryType === "PDF";
-
-    const item = await prisma.cargoItem.update({
-      where: { id },
-      data: {
-        ...base,
-        imageUrl:
-          emptyToNull(parsed.data.imageUrl) ??
-          (isPdf ? existing.imageUrl : null),
-        pdfData: isPdf ? parsedRequest.pdfData ?? existing.pdfData : null,
-        pdfUrl: isPdf ? itemPdfPath(id) : null,
-        pdfFileName: isPdf
-          ? emptyToNull(parsed.data.pdfFileName) || existing.pdfFileName
-          : null,
-      },
-      include: itemListInclude,
+    const result = await updateCargoItemFields(id, parsed.data, {
+      pdfData: parsedRequest.pdfData,
+      keepPdf: Boolean(existing.pdfData) && !parsedRequest.pdfData,
+      existingPdfName: existing.pdfFileName,
+      existingImageUrl: existing.imageUrl,
     });
 
-    if (previousStatus !== item.status) {
-      try {
-        const { enqueueStatusChangeNotifications } = await import(
-          "@/lib/telegram/subscriptions"
-        );
-        await enqueueStatusChangeNotifications({
-          cargo: sanitizeItem(item),
-          previousStatus: previousStatus as
-            | "CHINA_WAREHOUSE"
-            | "DEPARTED"
-            | "AT_BORDER"
-            | "ARRIVED_TASHKENT",
-          nextStatus: item.status as
-            | "CHINA_WAREHOUSE"
-            | "DEPARTED"
-            | "AT_BORDER"
-            | "ARRIVED_TASHKENT",
-        });
-      } catch (error) {
-        console.error("[api/items] notification enqueue failed", error);
-      }
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json(sanitizeItem(item));
+    return NextResponse.json(result.item);
   } catch (error) {
     const message =
       error instanceof Error && error.message.includes("Unique constraint")
@@ -111,7 +81,10 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   try {
     const { id } = await params;
-    await prisma.cargoItem.delete({ where: { id } });
+    const result = await deleteCargoItem(id);
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
