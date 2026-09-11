@@ -242,6 +242,8 @@ button {
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  container-type: inline-size;
+  container-name: hero-copy;
 }
 
 .home-hero__viz {
@@ -252,7 +254,8 @@ button {
 
 .home-hero__title {
   font-family: var(--font-syne), sans-serif;
-  font-size: clamp(2rem, 5.5vw, 2.5rem);
+  /* 7.2cqi keeps Syne "Toshkentgacha." (~12.8em) inside the copy column */
+  font-size: clamp(2rem, 7.2cqi, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 0.96;
@@ -264,13 +267,11 @@ button {
 @media (min-width: 1024px) {
   .home-hero {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-    /* ≥32px gutter between copy and logistics panel */
     gap: 2.5rem;
   }
 
   .home-hero__title {
-    /* ~20% smaller than prior 76px cap; longest UZ word must fit column */
-    font-size: clamp(40px, 3.2vw, 58px);
+    font-size: clamp(40px, 7.2cqi, 58px);
   }
 }
 
