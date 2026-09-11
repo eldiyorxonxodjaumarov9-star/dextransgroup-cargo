@@ -193,6 +193,14 @@ export async function POST(request: Request) {
       await prisma.telegramBotSession.deleteMany({
         where: { telegramUserId: { in: [tgId, otherTg] } },
       });
+      await prisma.telegramCustomer.deleteMany({
+        where: {
+          OR: [
+            { firstName: { startsWith: "PHASE2-SMOKE" } },
+            { username: "phase2_smoke" },
+          ],
+        },
+      });
       note("cleanup done", true, track);
     } catch (cleanupError) {
       note(
