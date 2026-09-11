@@ -1,0 +1,73 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+coverage
+
+# next.js
+.next
+out
+dist
+build
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+
+# debug / logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env
+.env.local
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# databases
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# local cookies / secrets
+cookies.txt
+
+# local source photo dumps
+/rasimlar/
+
+
+# uploaded files (legacy local disks; PDFs now live in DB)
+/public/uploads/warehouses/*
+!/public/uploads/warehouses/.gitkeep
+/public/uploads/items/*
+!/public/uploads/items/.gitkeep
+
+.vercel
+.env*
+!.env.example
+
+.telegram-setup-state.json
+
+.vercel
+.env*
