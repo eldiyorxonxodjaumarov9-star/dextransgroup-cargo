@@ -39,6 +39,27 @@ function migrateDeploy() {
   return run(["migrate", "deploy"]);
 }
 
+function failedMigrationName(text) {
+  const m =
+    text.match(/The `([^`]+)` migration/) ||
+    text.match(/Migration name: ([^\s]+)/);
+  return m?.[1] || null;
+}
+
+function resolveRolledBack(name) {
+  console.warn(`[prod-db] Marking migration rolled-back: ${name}`);
+  return print(run(["migrate", "resolve", "--rolled-back", name]));
+}
+
+function ensureCoreTables() {
+  console.warn(
+    "[prod-db] Ensuring core tables exist (idempotent, non-destructive)..."
+  );
+  return print(
+    run(["db", "execute", "--file", "scripts/ensure-core-tables.sql"])
+  );
+}
+
 if (isBad(process.env.DATABASE_URL)) {
   console.warn(
     "[prod-db] Skipping migrate/admin: DATABASE_URL is missing or placeholder."
@@ -50,16 +71,25 @@ let migrate = migrateDeploy();
 let text = print(migrate);
 
 // Recover from a previously failed migration record (e.g. interrupted deploy).
-if ((migrate.status ?? 1) !== 0 && text.includes("P3009")) {
-  const failed = text.match(/The `([^`]+)` migration/);
-  if (failed?.[1]) {
-    console.warn(
-      `[prod-db] Failed migration detected (${failed[1]}) — marking rolled-back, then retrying deploy...`
-    );
-    print(run(["migrate", "resolve", "--rolled-back", failed[1]]));
-    migrate = migrateDeploy();
-    text = print(migrate);
+if ((migrate.status ?? 1) !== 0 && /P3009|P3018/.test(text)) {
+  const failed = failedMigrationName(text);
+  if (failed) {
+    resolveRolledBack(failed);
   }
+  if (/CargoItem|does not exist|42P01/i.test(text)) {
+    ensureCoreTables();
+  }
+  migrate = migrateDeploy();
+  text = print(migrate);
+}
+
+// Second recovery pass if apply failed again after rollback.
+if ((migrate.status ?? 1) !== 0 && /P3009|P3018/.test(text)) {
+  const failed = failedMigrationName(text);
+  if (failed) resolveRolledBack(failed);
+  ensureCoreTables();
+  migrate = migrateDeploy();
+  text = print(migrate);
 }
 
 if ((migrate.status ?? 1) !== 0 && text.includes("P3005")) {
