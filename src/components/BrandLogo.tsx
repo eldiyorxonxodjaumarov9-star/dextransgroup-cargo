@@ -34,11 +34,12 @@ const variants = {
     height: 269,
   },
   nav: {
+    // Wide wordmark — keep intrinsic ratio; constrain via CSS height/max-width only
     light: "/brand/logo-worldwide-nav.png",
     dark: "/brand/logo-worldwide-nav-dark.png",
     alt: "dextrans Worldwide",
-    width: 320,
-    height: 120,
+    width: 645,
+    height: 190,
   },
   mark: {
     light: "/brand/logo-mark.png",
@@ -66,6 +67,22 @@ export function BrandLogo({
   // defaultTheme is dark — prefer dark (white) assets until hydrated
   const isDark = !mounted || resolvedTheme !== "light";
   const src = isDark ? meta.dark : meta.light;
+
+  if (variant === "nav") {
+    return (
+      <span className={cn("site-nav-logo", className)} aria-label={meta.alt}>
+        <Image
+          src={src}
+          alt={meta.alt}
+          fill
+          priority={priority}
+          unoptimized
+          sizes="(max-width: 1023px) 135px, 165px"
+          className="site-nav-logo__img"
+        />
+      </span>
+    );
+  }
 
   return (
     <Image

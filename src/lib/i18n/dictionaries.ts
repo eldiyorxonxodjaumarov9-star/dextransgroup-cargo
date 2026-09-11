@@ -18,6 +18,8 @@ export type Dictionary = {
     warehouses: string;
     operators: string;
     admin: string;
+    adminLogin: string;
+    adminLoginAria: string;
     menu: string;
     close: string;
     openMenu: string;
@@ -165,6 +167,8 @@ const uz: Dictionary = {
     warehouses: "Omborlar",
     operators: "Operatorlar",
     admin: "Admin",
+    adminLogin: "🔐 Admin panelga kirish",
+    adminLoginAria: "Admin panelga kirish",
     menu: "Menyu",
     close: "Yopish",
     openMenu: "Menyuni ochish",
@@ -325,6 +329,8 @@ const ru: Dictionary = {
     warehouses: "Склады",
     operators: "Операторы",
     admin: "Админ",
+    adminLogin: "🔐 Вход в админ-панель",
+    adminLoginAria: "Вход в админ-панель",
     menu: "Меню",
     close: "Закрыть",
     openMenu: "Открыть меню",
@@ -480,6 +486,8 @@ const en: Dictionary = {
     warehouses: "Warehouses",
     operators: "Operators",
     admin: "Admin",
+    adminLogin: "🔐 Admin panel login",
+    adminLoginAria: "Admin panel login",
     menu: "Menu",
     close: "Close",
     openMenu: "Open menu",
@@ -635,6 +643,8 @@ const zh: Dictionary = {
     warehouses: "仓库",
     operators: "操作员",
     admin: "管理",
+    adminLogin: "🔐 进入管理面板",
+    adminLoginAria: "进入管理面板",
     menu: "菜单",
     close: "关闭",
     openMenu: "打开菜单",
@@ -788,6 +798,8 @@ const kk: Dictionary = {
     warehouses: "Қоймалар",
     operators: "Операторлар",
     admin: "Әкімші",
+    adminLogin: "🔐 Әкімші панеліне кіру",
+    adminLoginAria: "Әкімші панеліне кіру",
     menu: "Мәзір",
     close: "Жабу",
     openMenu: "Мәзірді ашу",

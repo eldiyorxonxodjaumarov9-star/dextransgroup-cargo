@@ -198,12 +198,14 @@ export function LanguageSwitcher({
         ref={buttonRef}
         type="button"
         className={cn(
-          "inline-flex min-h-11 max-w-full shrink-0 items-center gap-1 rounded-full border px-2 py-2 text-xs font-semibold transition sm:gap-1.5 sm:px-3 sm:text-sm",
-          compact && "!min-h-11 !px-2",
+          "inline-flex h-10 max-w-full shrink-0 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:gap-1.5 sm:px-3 sm:text-[13px]",
+          compact && "px-2.5",
           variant === "default" &&
             "border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text)]",
-          (variant === "dock" || variant === "nav") &&
+          variant === "dock" &&
             "border-transparent bg-[var(--surface-elevated)] text-[var(--text)] hover:bg-[var(--surface-soft)]",
+          variant === "nav" &&
+            "h-10 min-h-10 w-auto border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text)] hover:bg-[var(--surface-soft)]",
           variant === "ghost" && "border-transparent bg-transparent text-[var(--text)]"
         )}
         aria-label={t.lang}

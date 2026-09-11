@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
+import { ArrowRight, Lock, Menu, Moon, Sun, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { MagneticButton } from "@/components/MagneticButton";
 import { useLocale } from "@/components/LocaleProvider";
 import { LogisticsNetworkBackground } from "@/components/logistics/LogisticsNetworkBackground";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -18,6 +19,8 @@ type NavItem = {
   href: string;
   label: string;
 };
+
+const DRAWER_EASE = [0.22, 1, 0.36, 1] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -31,6 +34,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const wasMenuOpen = useRef(false);
+  const drawerId = useId();
 
   const publicNav: NavItem[] = useMemo(
     () => [
@@ -74,6 +80,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [menuOpen]);
 
   useEffect(() => {
+    if (wasMenuOpen.current && !menuOpen) {
+      menuBtnRef.current?.focus();
+    }
+    wasMenuOpen.current = menuOpen;
+  }, [menuOpen]);
+
+  useEffect(() => {
     if (isAdmin) return;
     if (pathname.startsWith("/guest-services")) return;
 
@@ -97,8 +110,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => observer.disconnect();
   }, [isAdmin, pathname, publicNav]);
 
-  function goNav(item: NavItem | { id: string; href: string }) {
+  function closeMenu() {
     setMenuOpen(false);
+  }
+
+  function goNav(item: NavItem | { id: string; href: string }) {
+    closeMenu();
     if (item.href.startsWith("/guest-services") || !item.href.includes("#")) {
       window.location.assign(item.href);
       return;
@@ -119,7 +136,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const themeButton = (
     <button
       type="button"
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text)]"
+      className="site-header__icon-btn"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={t.nav.theme}
     >
@@ -162,38 +179,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="site-frame">
       <LogisticsNetworkBackground />
       <div className="site-canvas">
-        <header
-          className={cn(
-            "sticky top-0 z-[80] transition-all duration-300",
-            scrolled ? "px-3 pt-3 sm:px-5 sm:pt-4" : "px-0 pt-0"
-          )}
-        >
+        <header className="site-header">
           <motion.div
-            className={cn(
-              "mx-auto flex max-w-[1400px] items-center gap-2 transition-all duration-300",
-              scrolled
-                ? "glass-nav rounded-full px-3 py-2 sm:px-4"
-                : "border-b border-transparent px-3 py-3 sm:px-5 lg:px-8 lg:py-5"
-            )}
-            initial={reduced ? false : { y: -20, opacity: 0 }}
+            className={cn("site-header__bar", scrolled && "is-scrolled")}
+            initial={reduced ? false : { y: -6, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: DRAWER_EASE }}
           >
             <button
               type="button"
-              className="flex min-w-0 shrink items-center gap-2"
+              className="flex min-w-0 shrink-0 items-center"
               onClick={() => goNav({ id: "home", href: "/#home" })}
               aria-label={t.nav.home}
             >
-              <BrandLogo
-                variant="nav"
-                priority
-                className="h-7 w-auto max-w-[min(170px,42vw)] sm:h-8 lg:h-9 lg:max-w-[200px]"
-              />
+              <BrandLogo variant="nav" priority />
             </button>
 
             <nav
-              className="mx-auto hidden items-center gap-1 lg:flex"
+              className="mx-auto hidden min-w-0 items-center gap-1.5 lg:flex xl:gap-2.5"
               aria-label={t.nav.mainMenu}
             >
               {publicNav.map((item) => {
@@ -203,12 +206,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     key={item.id}
                     type="button"
                     onClick={() => goNav(item)}
-                    className={cn(
-                      "rounded-full px-3.5 py-2 text-[13px] font-medium transition",
-                      active
-                        ? "bg-[var(--surface-soft)] text-[var(--text)]"
-                        : "text-[var(--text-secondary)] hover:text-[var(--text)]"
-                    )}
+                    className={cn("site-header__link", active && "is-active")}
                   >
                     {item.label}
                   </button>
@@ -219,21 +217,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
               <LanguageSwitcher compact variant="nav" />
               <span className="hidden sm:inline-flex">{themeButton}</span>
-              <Link
+              <MagneticButton
+                href="/admin/login"
+                className="site-header__admin"
+                aria-label={t.nav.adminLoginAria}
+              >
+                <Lock size={14} className="site-header__admin-icon" />
+                <span className="site-header__admin-label">{t.nav.admin}</span>
+              </MagneticButton>
+              <MagneticButton
                 href="/#cargo"
-                className="btn btn-primary !hidden !min-h-10 !px-4 !text-xs lg:!inline-flex"
+                className="btn btn-primary site-header__cta"
               >
                 {t.home.ctaCargo}
-                <ArrowRight size={14} />
-              </Link>
+                <ArrowRight size={14} className="cta-arrow" />
+              </MagneticButton>
               <button
+                ref={menuBtnRef}
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--accent)] text-[var(--accent-foreground)] lg:hidden"
+                className="site-header__menu-btn lg:hidden"
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
                 aria-expanded={menuOpen}
+                aria-controls={drawerId}
               >
-                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={menuOpen ? "close" : "open"}
+                    initial={reduced ? false : { opacity: 0, rotate: -40, scale: 0.85 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={reduced ? undefined : { opacity: 0, rotate: 40, scale: 0.85 }}
+                    transition={{ duration: 0.18 }}
+                    className="inline-flex"
+                  >
+                    {menuOpen ? <X size={18} /> : <Menu size={18} />}
+                  </motion.span>
+                </AnimatePresence>
               </button>
             </div>
           </motion.div>
@@ -242,43 +261,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <AnimatePresence>
           {menuOpen && (
             <motion.div
-              className="fixed inset-0 z-[95] lg:hidden"
+              id={drawerId}
+              className="site-drawer lg:hidden"
               role="dialog"
               aria-modal="true"
+              aria-label={t.nav.menu}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.36, ease: DRAWER_EASE }}
             >
-              <button
+              <motion.button
                 type="button"
-                className="absolute inset-0 bg-black/70"
+                className="site-drawer__backdrop"
                 aria-label={t.nav.closeMenu}
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduced ? 0 : 0.36 }}
               />
-              <motion.div
-                className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[28px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-2xl safe-bottom"
-                initial={reduced ? false : { y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", stiffness: 340, damping: 34 }}
+              <motion.aside
+                className="site-drawer__panel"
+                initial={reduced ? false : { x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: reduced ? 0 : 0.38, ease: DRAWER_EASE }}
               >
-                <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4">
-                  <p className="section-kicker !normal-case !tracking-[0.12em]">
-                    {t.nav.menu}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {themeButton}
-                    <button
-                      type="button"
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-elevated)]"
-                      onClick={() => setMenuOpen(false)}
-                      aria-label={t.nav.closeMenu}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
+                <div className="site-drawer__header">
+                  <BrandLogo variant="nav" />
+                  <button
+                    type="button"
+                    className="site-header__icon-btn"
+                    onClick={closeMenu}
+                    aria-label={t.nav.closeMenu}
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <nav className="overflow-y-auto px-3 py-3" aria-label={t.nav.mobileMenu}>
+
+                <nav className="site-drawer__nav" aria-label={t.nav.mobileMenu}>
                   {publicNav.map((item, index) => {
                     const active = currentSection === item.id;
                     return (
@@ -286,31 +308,68 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         key={item.id}
                         type="button"
                         onClick={() => goNav(item)}
-                        initial={reduced ? false : { opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.04 * index }}
+                        initial={reduced ? false : { opacity: 0, x: 16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          delay: reduced ? 0 : 0.04 + index * 0.035,
+                          duration: 0.28,
+                          ease: DRAWER_EASE,
+                        }}
                         className={cn(
-                          "mb-1 flex min-h-12 w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-semibold",
-                          active
-                            ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                            : "text-[var(--text)] hover:bg-[var(--surface-elevated)]"
+                          "site-drawer__item",
+                          active && "is-active"
                         )}
                       >
-                        <span className="min-w-0 break-words pr-3">{item.label}</span>
-                        <ArrowRight size={16} className="shrink-0" />
+                        <span className="min-w-0 break-words">{item.label}</span>
+                        <ArrowRight size={16} className="shrink-0 opacity-70" />
                       </motion.button>
                     );
                   })}
-                  <Link
-                    href="/#cargo"
-                    onClick={() => setMenuOpen(false)}
-                    className="btn btn-primary mt-3 w-full"
+
+                  <motion.div
+                    initial={reduced ? false : { opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: reduced ? 0 : 0.2,
+                      duration: 0.28,
+                      ease: DRAWER_EASE,
+                    }}
                   >
-                    {t.home.ctaCargo}
-                    <ArrowRight size={16} />
-                  </Link>
+                    <Link
+                      href="/#cargo"
+                      onClick={closeMenu}
+                      className="btn btn-primary mt-1 w-full min-h-11"
+                    >
+                      {t.home.ctaCargo}
+                      <ArrowRight size={16} />
+                    </Link>
+                  </motion.div>
+
+                  <motion.div
+                    initial={reduced ? false : { opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: reduced ? 0 : 0.24,
+                      duration: 0.28,
+                      ease: DRAWER_EASE,
+                    }}
+                  >
+                    <Link
+                      href="/admin/login"
+                      onClick={closeMenu}
+                      className="site-drawer__admin mt-1"
+                      aria-label={t.nav.adminLoginAria}
+                    >
+                      {t.nav.adminLogin}
+                    </Link>
+                  </motion.div>
                 </nav>
-              </motion.div>
+
+                <div className="site-drawer__tools">
+                  <LanguageSwitcher compact variant="nav" />
+                  {themeButton}
+                </div>
+              </motion.aside>
             </motion.div>
           )}
         </AnimatePresence>
@@ -320,7 +379,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <SiteFooter />
 
-        {/* Mobile bottom nav */}
         <nav
           className="fixed inset-x-0 bottom-0 z-[70] border-t border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden"
           aria-label={t.nav.mobileMenu}
