@@ -230,6 +230,27 @@ button {
   padding-block: clamp(4rem, 9vw, 7.5rem);
 }
 
+/* Home hero title: keep words intact, stay inside left column (no viz overlap). */
+.home-hero__copy {
+  min-width: 0;
+  max-width: 34rem;
+}
+
+.home-hero__title {
+  font-family: var(--font-syne), sans-serif;
+  font-size: clamp(2.25rem, 6.2vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .home-hero__title {
+    font-size: clamp(54px, 4.4vw, 76px);
+  }
+}
+
 .section-title {
   font-family: var(--font-syne), sans-serif;
   font-size: clamp(2rem, 5.5vw, 3.75rem);

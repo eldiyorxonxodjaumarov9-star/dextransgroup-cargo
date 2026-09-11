@@ -178,12 +178,12 @@ export function HomePublicContent({
 
       {/* 01 Hero */}
       <section id="home" className="page-wrap relative pt-6 sm:pt-10 lg:pt-14">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
-          <div className="min-w-0">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-8 xl:gap-10">
+          <div className="home-hero__copy">
             <FadeIn>
               <p className="section-kicker">{t.home.heroLabel}</p>
             </FadeIn>
-            <h1 className="mt-5 font-display text-[clamp(2.4rem,7vw,4.75rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">
+            <h1 className="home-hero__title mt-5">
               {heroLines.map((line, i) => (
                 <motion.span
                   key={line}
