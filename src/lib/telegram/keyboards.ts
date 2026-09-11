@@ -11,21 +11,67 @@ export type InlineKeyboardMarkup = {
 };
 
 export type ReplyKeyboardMarkup = {
-  keyboard: Array<Array<{ text: string }>>;
+  keyboard: Array<
+    Array<{ text: string; request_contact?: boolean; request_location?: boolean }>
+  >;
   resize_keyboard?: boolean;
   one_time_keyboard?: boolean;
 };
 
 export function publicReplyKeyboard(isAdmin: boolean): ReplyKeyboardMarkup {
-  const rows: Array<Array<{ text: string }>> = [
-    [{ text: "📦 Yukimni tekshirish" }],
-    [{ text: "🏢 Omborlar" }, { text: "👨‍💼 Operatorlar" }],
-    [{ text: "🛎 Xizmatlar" }, { text: "🌐 Saytni ochish" }],
+  const rows: Array<
+    Array<{ text: string; request_contact?: boolean }>
+  > = [
+    [{ text: "📦 Yukni tekshirish" }, { text: "🚚 Mening yuklarim" }],
+    [{ text: "➕ Yuk yuborish" }, { text: "🧮 Narxni hisoblash" }],
+    [{ text: "🏢 Omborlar" }, { text: "💰 Tariflar" }],
+    [{ text: "👨‍💼 Operatorlar" }, { text: "ℹ️ Qo‘llanma" }],
+    [{ text: "▶️ Boshqa" }],
   ];
   if (isAdmin) {
     rows.push([{ text: "⚙️ Admin boshqaruvi" }]);
   }
   return { keyboard: rows, resize_keyboard: true };
+}
+
+export function moreReplyKeyboard(isAdmin: boolean): ReplyKeyboardMarkup {
+  const rows: Array<Array<{ text: string }>> = [
+    [{ text: "🛎 Xizmatlar" }, { text: "🚫 Taqiqlangan mahsulotlar" }],
+    [{ text: "🌐 Saytni ochish" }],
+    [{ text: "⬅️ Asosiy menyu" }],
+  ];
+  if (isAdmin) {
+    rows.splice(2, 0, [{ text: "⚙️ Admin boshqaruvi" }]);
+  }
+  return { keyboard: rows, resize_keyboard: true };
+}
+
+export function requestContactKeyboard(): ReplyKeyboardMarkup {
+  return {
+    keyboard: [
+      [{ text: "📱 Telefon raqamni yuborish", request_contact: true }],
+      [{ text: "❌ Bekor qilish" }],
+    ],
+    resize_keyboard: true,
+    one_time_keyboard: true,
+  };
+}
+
+export function myCargoFilterKeyboard(): InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      [
+        { text: "🆕 Yangi", callback_data: "p:myc:NEW:0" },
+        { text: "🚚 Yo‘lda", callback_data: "p:myc:IN_TRANSIT:0" },
+      ],
+      [
+        { text: "📍 Chegarada", callback_data: "p:myc:AT_BORDER:0" },
+        { text: "✅ Yetib kelgan", callback_data: "p:myc:ARRIVED:0" },
+      ],
+      [{ text: "📚 Barchasi", callback_data: "p:myc:ALL:0" }],
+      [{ text: "🏠 Bosh menyu", callback_data: "p:home" }],
+    ],
+  };
 }
 
 export function homeInline(appUrl: string): InlineKeyboardMarkup {
@@ -129,6 +175,8 @@ export function cargoResultKeyboard(options: {
   cargoId: string;
   appUrl: string;
   subscribed?: boolean;
+  canClaim?: boolean;
+  ownedByMe?: boolean;
 }): InlineKeyboardMarkup {
   const base = options.appUrl.replace(/\/$/, "");
   const rows: InlineButton[][] = [
@@ -138,13 +186,64 @@ export function cargoResultKeyboard(options: {
         callback_data: options.subscribed ? "p:home" : `p:sub:${options.cargoId}`,
       },
     ],
-    [
-      { text: "🔎 Yana qidirish", callback_data: "p:track" },
-      { text: "🌐 Saytda", web_app: { url: `${base}/telegram` } },
-    ],
-    [{ text: "🏠 Menyuga", callback_data: "p:home" }],
   ];
+  if (options.canClaim) {
+    rows.push([
+      {
+        text: "🚚 Mening yuklarimga qo‘shish",
+        callback_data: `p:claim:${options.cargoId}`,
+      },
+    ]);
+  } else if (options.ownedByMe) {
+    rows.push([{ text: "✅ Mening yuklarimda", callback_data: "p:myc:ALL:0" }]);
+  }
+  rows.push([
+    { text: "👨‍💼 Operator", callback_data: "p:op" },
+    { text: "🔎 Yana qidirish", callback_data: "p:track" },
+  ]);
+  rows.push([
+    { text: "🌐 Saytda", web_app: { url: `${base}/telegram` } },
+    { text: "🏠 Bosh menyu", callback_data: "p:home" },
+  ]);
   return { inline_keyboard: rows };
+}
+
+export function myCargoItemKeyboard(options: {
+  cargoId: string;
+  subscribed?: boolean;
+}): InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: "🔄 Yangilash",
+          callback_data: `p:myi:${options.cargoId}`,
+        },
+        {
+          text: options.subscribed ? "🔕 Xabarni o‘chirish" : "🔔 Xabarni yoqish",
+          callback_data: options.subscribed
+            ? `p:unsub:${options.cargoId}`
+            : `p:sub:${options.cargoId}`,
+        },
+      ],
+      [
+        { text: "👨‍💼 Operator", callback_data: "p:op" },
+        { text: "⬅️ Orqaga", callback_data: "p:myc:ALL:0" },
+      ],
+    ],
+  };
+}
+
+export function claimReviewKeyboard(claimId: string): InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      [
+        { text: "✅ Tasdiqlash", callback_data: `a:claim:ok:${claimId}` },
+        { text: "❌ Rad etish", callback_data: `a:claim:no:${claimId}` },
+      ],
+      [{ text: "⬅️ Admin menyu", callback_data: "a:menu" }],
+    ],
+  };
 }
 
 export function guestServicesKeyboard(appUrl: string): InlineKeyboardMarkup {
@@ -177,6 +276,7 @@ export function adminMenuKeyboard(appUrl: string): InlineKeyboardMarkup {
         { text: "🔎 Yukni topish", callback_data: "a:find" },
         { text: "📦 Yuklar", callback_data: "a:list" },
       ],
+      [{ text: "📝 Ownership so‘rovlari", callback_data: "a:claims" }],
       [{ text: "🔄 Status o‘zgartirish", callback_data: "a:status" }],
       [
         { text: "🏢 Omborlar", callback_data: "a:wh" },

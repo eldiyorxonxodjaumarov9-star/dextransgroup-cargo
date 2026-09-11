@@ -25,10 +25,12 @@ import {
   cargoResultKeyboard,
   categoryKeyboard,
   guestServicesKeyboard,
+  moreReplyKeyboard,
   openSiteKeyboard,
   operatorPickKeyboard,
   previewKeyboard,
   publicReplyKeyboard,
+  requestContactKeyboard,
   skipOrCancelKeyboard,
   statusKeyboard,
   warehouseDetailKeyboard,
@@ -41,7 +43,7 @@ import {
   CATEGORY_UZ,
   STATUS_SHORT,
   STATUS_UZ,
-  adminMenuText,
+  comingSoonText,
   cargoNotFoundText,
   formatOperatorCard,
   formatPublicCargo,
@@ -49,10 +51,24 @@ import {
   menuHintText,
   trackAskText,
   welcomeText,
+  adminMenuText,
 } from "@/lib/telegram/messages";
 import { getGuestServicesBotText } from "@/lib/telegram/guest-services";
+import {
+  handleSharedContact,
+  openMyCargo,
+  requestCargoClaim,
+  sendPendingClaimsToAdmin,
+  handleClaimAdminAction,
+  refreshMyCargoItem,
+} from "@/lib/telegram/customer-flows";
+import { findCustomerByTelegramId } from "@/lib/customer-service";
 import { assertTelegramAdmin } from "@/lib/telegram/permissions";
-import { isSubscribed, subscribeToCargo } from "@/lib/telegram/subscriptions";
+import {
+  isSubscribed,
+  subscribeToCargo,
+  unsubscribeFromCargo,
+} from "@/lib/telegram/subscriptions";
 import type { CargoCategory, CargoStatus } from "@/lib/types";
 import { googleMapsSearchUrl } from "@/lib/geocode";
 
@@ -62,7 +78,19 @@ export type TelegramUpdate = {
     message_id?: number;
     text?: string;
     chat?: { id?: number; type?: string };
-    from?: { id?: number; username?: string; is_bot?: boolean };
+    from?: {
+      id?: number;
+      username?: string;
+      first_name?: string;
+      last_name?: string;
+      is_bot?: boolean;
+    };
+    contact?: {
+      phone_number?: string;
+      user_id?: number;
+      first_name?: string;
+      last_name?: string;
+    };
   };
   callback_query?: {
     id: string;
@@ -183,6 +211,9 @@ async function handleTrackLookup(options: {
   }
 
   const subscribed = await isSubscribed(String(options.userId), item.id);
+  const customer = await findCustomerByTelegramId(options.userId);
+  const ownedByMe = Boolean(customer && item.customerId === customer.id);
+  const canClaim = !item.customerId && !ownedByMe;
   await clearSession(String(options.userId));
   await reply(
     options.chatId,
@@ -191,6 +222,8 @@ async function handleTrackLookup(options: {
       cargoId: item.id,
       appUrl: options.ctx.appUrl,
       subscribed,
+      canClaim,
+      ownedByMe,
     }),
     options.ctx.botToken
   );
@@ -340,13 +373,34 @@ export async function handleTelegramUpdate(options: {
   }
 
   const message = options.update.message;
-  if (!message?.text || !message.chat?.id || !message.from?.id) {
+  if (!message?.chat?.id || !message.from?.id) {
     return { handled: false };
   }
   if (!isPrivateChat(message.chat.type)) return { handled: false };
 
   const chatId = message.chat.id;
   const userId = message.from.id;
+
+  if (message.contact) {
+    const result = await handleSharedContact({
+      chatId,
+      userId,
+      from: {
+        id: userId,
+        first_name: message.from.first_name,
+        last_name: message.from.last_name,
+        username: message.from.username,
+      },
+      contact: message.contact,
+      ctx,
+    });
+    return { handled: result.handled };
+  }
+
+  if (!message.text) {
+    return { handled: false };
+  }
+
   const text = message.text.trim();
   const cmd = normalizeCommand(text);
 
@@ -362,7 +416,7 @@ export async function handleTelegramUpdate(options: {
     return { handled: true };
   }
 
-  if (cmd === "/cancel") {
+  if (cmd === "/cancel" || text === "❌ Bekor qilish") {
     await clearSession(String(userId));
     await reply(
       chatId,
@@ -374,7 +428,7 @@ export async function handleTelegramUpdate(options: {
   }
 
   // Reply keyboard labels
-  if (text === "📦 Yukimni tekshirish") {
+  if (text === "📦 Yukni tekshirish" || text === "📦 Yukimni tekshirish") {
     await upsertSession({
       telegramUserId: String(userId),
       chatId: String(chatId),
@@ -383,6 +437,45 @@ export async function handleTelegramUpdate(options: {
       payload: {},
     });
     await reply(chatId, trackAskText(), undefined, ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "🚚 Mening yuklarim") {
+    await openMyCargo({ chatId, userId, ctx });
+    return { handled: true };
+  }
+  if (text === "➕ Yuk yuborish") {
+    await reply(chatId, comingSoonText("Yuk yuborish"), publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "🧮 Narxni hisoblash") {
+    await reply(chatId, comingSoonText("Narxni hisoblash"), publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "💰 Tariflar") {
+    await reply(chatId, comingSoonText("Tariflar"), publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "ℹ️ Qo‘llanma") {
+    await reply(chatId, comingSoonText("Qo‘llanma"), publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "🚫 Taqiqlangan mahsulotlar") {
+    await reply(chatId, comingSoonText("Taqiqlangan mahsulotlar"), moreReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "▶️ Boshqa") {
+    await reply(chatId, "Qo‘shimcha bo‘limlar:", moreReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)), ctx.botToken);
+    return { handled: true };
+  }
+  if (text === "⬅️ Asosiy menyu") {
+    await sendHome({
+      chatId,
+      userId,
+      appUrl: ctx.appUrl,
+      botToken: ctx.botToken,
+      adminIds: ctx.adminIds,
+      greet: false,
+    });
     return { handled: true };
   }
   if (text === "🏢 Omborlar") {
@@ -425,6 +518,19 @@ export async function handleTelegramUpdate(options: {
     return { handled: true };
   }
 
+  // Reject typed phone during onboard
+  const onboard = await getSession(String(userId));
+  if (onboard?.mode === "customer_onboard" && onboard.step === "await_contact") {
+    await reply(
+      chatId,
+      "Telefonni chatga yozmang. “📱 Telefon raqamni yuborish” tugmasini bosing.",
+      requestContactKeyboard(),
+      ctx.botToken
+    );
+    return { handled: true };
+  }
+
+  // continue with session handlers below — keep existing track/admin flows
   const session = await getSession(String(userId));
   if (session?.mode === "track_search" && session.step === "track") {
     await handleTrackLookup({ chatId, userId, track: text, ctx });
@@ -512,6 +618,77 @@ async function handleCallback(options: {
       botToken: ctx.botToken,
       adminIds: ctx.adminIds,
     });
+    return;
+  }
+
+  if (data === "p:profile:ok") {
+    const session = await getSession(uid);
+    await clearSession(uid);
+    const customer = await findCustomerByTelegramId(userId);
+    await reply(
+      chatId,
+      customer
+        ? `✅ Profil tayyor.\n${customer.customerCode}`
+        : "✅ Profil saqlandi.",
+      publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+      ctx.botToken
+    );
+    if (session?.payload?.returnTo === "my_cargo") {
+      await openMyCargo({ chatId, userId, ctx });
+    } else if (session?.payload?.returnTo?.startsWith("claim:")) {
+      const cargoId = session.payload.returnTo.slice("claim:".length);
+      await requestCargoClaim({ chatId, userId, cargoId, ctx });
+    }
+    return;
+  }
+
+  if (data === "p:profile:cancel") {
+    await clearSession(uid);
+    await reply(
+      chatId,
+      "Bekor qilindi.",
+      publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+      ctx.botToken
+    );
+    return;
+  }
+
+  if (data.startsWith("p:myc:")) {
+    const parts = data.split(":");
+    const filter = (parts[2] || "ALL") as
+      | "NEW"
+      | "IN_TRANSIT"
+      | "AT_BORDER"
+      | "ARRIVED"
+      | "ALL";
+    const page = Number(parts[3] || 0) || 0;
+    await openMyCargo({ chatId, userId, ctx, filter, page });
+    return;
+  }
+
+  if (data.startsWith("p:myi:")) {
+    await refreshMyCargoItem({
+      chatId,
+      userId,
+      cargoId: data.slice("p:myi:".length),
+      ctx,
+    });
+    return;
+  }
+
+  if (data.startsWith("p:claim:")) {
+    await requestCargoClaim({
+      chatId,
+      userId,
+      cargoId: data.slice("p:claim:".length),
+      ctx,
+    });
+    return;
+  }
+
+  if (data.startsWith("p:unsub:")) {
+    await unsubscribeFromCargo(uid, data.slice("p:unsub:".length));
+    await reply(chatId, "🔕 Bildirishnoma o‘chirildi.", undefined, ctx.botToken);
     return;
   }
 
@@ -635,11 +812,20 @@ async function handleCallback(options: {
       );
       return;
     }
-    await subscribeToCargo({
+    const subResult = await subscribeToCargo({
       telegramUserId: uid,
       chatId: String(chatId),
       cargoItemId: cargo.id,
     });
+    if (!subResult.ok) {
+      await reply(
+        chatId,
+        `⛔ ${subResult.error}`,
+        publicReplyKeyboard(assertTelegramAdmin(userId, ctx.adminIds)),
+        ctx.botToken
+      );
+      return;
+    }
     await reply(
       chatId,
       `🔔 Obuna qilindi.\n${cargo.trackNumber}\nStatus o‘zgarsa xabar beramiz.`,
@@ -668,6 +854,32 @@ async function handleCallback(options: {
       } else {
         await reply(chatId, adminMenuText(), adminMenuKeyboard(ctx.appUrl), ctx.botToken);
       }
+      return;
+    }
+
+    if (data === "a:claims") {
+      await sendPendingClaimsToAdmin({ chatId, userId, ctx });
+      return;
+    }
+
+    if (data.startsWith("a:claim:ok:")) {
+      await handleClaimAdminAction({
+        chatId,
+        userId,
+        claimId: data.slice("a:claim:ok:".length),
+        approve: true,
+        ctx,
+      });
+      return;
+    }
+    if (data.startsWith("a:claim:no:")) {
+      await handleClaimAdminAction({
+        chatId,
+        userId,
+        claimId: data.slice("a:claim:no:".length),
+        approve: false,
+        ctx,
+      });
       return;
     }
 

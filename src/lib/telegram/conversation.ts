@@ -5,6 +5,7 @@ export const SESSION_TTL_MS = 1000 * 60 * 60 * 24; // 24h
 export type BotMode =
   | "idle"
   | "track_search"
+  | "customer_onboard"
   | "admin_add"
   | "admin_find"
   | "admin_status";
@@ -20,6 +21,8 @@ export type BotStep =
   | "notes"
   | "preview"
   | "pick_cargo"
+  | "await_contact"
+  | "confirm_profile"
   | null;
 
 export type SessionPayload = {
@@ -36,6 +39,10 @@ export type SessionPayload = {
   cargoId?: string;
   page?: number;
   region?: string;
+  phone?: string;
+  normalizedPhone?: string;
+  myCargoFilter?: string;
+  returnTo?: string;
 };
 
 function parsePayload(raw: string): SessionPayload {

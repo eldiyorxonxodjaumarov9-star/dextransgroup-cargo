@@ -20,15 +20,23 @@ export async function subscribeToCargo(options: {
   chatId: string;
   cargoItemId: string;
 }) {
+  const customer = await prisma.telegramCustomer.findUnique({
+    where: { telegramUserId: String(options.telegramUserId) },
+    select: { status: true },
+  });
+  if (customer?.status === "BLOCKED") {
+    return { ok: false as const, error: "Profil bloklangan" };
+  }
+
   const sub = await prisma.telegramCargoSubscription.upsert({
     where: {
       telegramUserId_cargoItemId: {
-        telegramUserId: options.telegramUserId,
+        telegramUserId: String(options.telegramUserId),
         cargoItemId: options.cargoItemId,
       },
     },
     create: {
-      telegramUserId: options.telegramUserId,
+      telegramUserId: String(options.telegramUserId),
       chatId: String(options.chatId),
       cargoItemId: options.cargoItemId,
       isActive: true,
@@ -38,7 +46,23 @@ export async function subscribeToCargo(options: {
       isActive: true,
     },
   });
-  return sub;
+  return { ok: true as const, sub };
+}
+
+export async function unsubscribeFromCargo(
+  telegramUserId: string,
+  cargoItemId: string
+) {
+  const sub = await prisma.telegramCargoSubscription.findUnique({
+    where: {
+      telegramUserId_cargoItemId: { telegramUserId, cargoItemId },
+    },
+  });
+  if (!sub) return null;
+  return prisma.telegramCargoSubscription.update({
+    where: { id: sub.id },
+    data: { isActive: false },
+  });
 }
 
 export async function isSubscribed(telegramUserId: string, cargoItemId: string) {

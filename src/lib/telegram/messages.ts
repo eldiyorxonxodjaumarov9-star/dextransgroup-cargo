@@ -162,8 +162,39 @@ export function guestServicesText(titles?: string[]) {
   return lines.join("\n");
 }
 
+export function comingSoonText(feature: string) {
+  return `⏳ ${feature}\n\nBu xizmat tez orada ishga tushadi.`;
+}
+
 export function adminMenuText() {
   return "⚙️ Admin boshqaruvi\n\nKerakli amalni tanlang.";
+}
+
+export function onboardIntroText() {
+  return [
+    "🚚 Mening yuklarim",
+    "",
+    "Yuklaringizni ko‘rish uchun telefon raqamingizni Telegram orqali yuboring.",
+    "Faqat “Telefon raqamni yuborish” tugmasidan foydalaning.",
+    "",
+    "Chatga yozilgan raqam qabul qilinmaydi.",
+  ].join("\n");
+}
+
+export function profilePreviewText(options: {
+  firstName: string;
+  phone: string;
+  customerCode: string;
+}) {
+  return [
+    "Profil tasdiqlash:",
+    "",
+    `👤 ${options.firstName}`,
+    `📞 ${options.phone}`,
+    `🆔 ${options.customerCode}`,
+    "",
+    "Tasdiqlaysizmi?",
+  ].join("\n");
 }
 
 export function statusChangedNotice(options: {

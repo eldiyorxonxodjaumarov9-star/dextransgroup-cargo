@@ -74,9 +74,53 @@ model CargoItem {
   warehouse    Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
   operatorId   String?
   operator     Operator?  @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  customerId   String?
+  customer     TelegramCustomer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   telegramSubscriptions TelegramCargoSubscription[]
+  ownershipClaims       CargoOwnershipClaim[]
+
+  @@index([customerId])
+}
+
+/// Telegram bot customer profile (phone-verified via Telegram contact share)
+model TelegramCustomer {
+  id               String   @id @default(cuid())
+  telegramUserId   String   @unique
+  chatId           String
+  firstName        String
+  lastName         String?
+  username         String?
+  phone            String?
+  normalizedPhone  String?
+  customerCode     String   @unique
+  language         String   @default("UZ")
+  status           String   @default("PENDING") // PENDING | VERIFIED | BLOCKED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  cargoItems       CargoItem[]
+  ownershipClaims  CargoOwnershipClaim[]
+
+  @@index([normalizedPhone])
+  @@index([status])
+}
+
+/// User request to link a found cargo track to their customer profile
+model CargoOwnershipClaim {
+  id                 String   @id @default(cuid())
+  telegramCustomerId String
+  telegramCustomer   TelegramCustomer @relation(fields: [telegramCustomerId], references: [id], onDelete: Cascade)
+  cargoItemId        String
+  cargoItem          CargoItem @relation(fields: [cargoItemId], references: [id], onDelete: Cascade)
+  status             String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt          DateTime @default(now())
+  reviewedAt         DateTime?
+  reviewedBy         String?
+
+  @@index([status, createdAt])
+  @@index([cargoItemId, status])
+  @@index([telegramCustomerId, status])
 }
 
 /// Durable Telegram conversation state (serverless-safe)

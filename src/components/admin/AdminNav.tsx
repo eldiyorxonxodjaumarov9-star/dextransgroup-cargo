@@ -7,6 +7,7 @@ import {
   Boxes,
   ChevronLeft,
   ChevronRight,
+  ContactRound,
   FileSpreadsheet,
   LayoutDashboard,
   LogOut,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/items", label: "Yuklar", icon: Package },
+  { href: "/admin/customers", label: "Mijozlar", icon: ContactRound },
   { href: "/admin/warehouses", label: "Omborlar", icon: Warehouse },
   { href: "/admin/operators", label: "Operatorlar", icon: Users },
   { href: "/admin/guest-services", label: "Mehmon xizmatlari", icon: Boxes },

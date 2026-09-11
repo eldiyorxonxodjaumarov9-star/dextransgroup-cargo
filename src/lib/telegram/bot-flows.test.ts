@@ -86,7 +86,8 @@ describe("telegram bot messages + permissions", () => {
   it("builds public reply keyboard with optional admin", () => {
     const publicKb = publicReplyKeyboard(false);
     const labels = publicKb.keyboard.flat().map((b) => b.text);
-    assert.ok(labels.includes("📦 Yukimni tekshirish"));
+    assert.ok(labels.includes("📦 Yukni tekshirish"));
+    assert.ok(labels.includes("🚚 Mening yuklarim"));
     assert.ok(!labels.includes("⚙️ Admin boshqaruvi"));
     assert.equal(
       "inline_keyboard" in publicKb,
